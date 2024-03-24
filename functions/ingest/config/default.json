@@ -1,0 +1,6 @@
+{
+  "github": {
+    "signatureHeader": "X-Hub-Signature-256",
+    "signatureSecret": "9e536d51-b6e4-4c50-9d64-c29de561346e"
+  }
+}

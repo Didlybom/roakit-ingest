@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es2022", "DOM"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "es2022"
+  },
+  "exclude": ["./lib", "./node_modules"],
+  "include": ["./src/**/*.ts"]
+}

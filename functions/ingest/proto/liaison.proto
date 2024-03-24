@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package liaison.v1;
+
+// Identifier passed via webhook URI to tie REST call to a specific feed.
+message ClientId {
+
+  // Customer / business / organization identifier
+  uint64 customer_id = 1;
+
+  // Unique feed identifier
+  uint64 feed_id = 2;
+
+  // Checksum for the above fields.
+  string checksum = 8;
+}

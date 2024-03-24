@@ -1,0 +1,52 @@
+{
+  "name": "@roakit/ingest-function",
+  "version": "0.0.1",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "npm run build.proto && tsc",
+    "build.proto": "mkdir -p src/generated && protoc --ts_opt=esModuleInterop=true --ts_opt=json_names --ts_out=src/generated proto/*.proto",
+    "local": "npm run build && firebase use default && firebase emulators:start --inspect-functions --only functions",
+    "deploy": "npm run build && firebase use default; firebase deploy --only functions:ingest",
+    "deploy.prod": "npm run build && firebase use prod; firebase deploy --only functions:ingest",
+    "lint": "eslint --ext .ts .",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "@google-cloud/secret-manager": "^5.2.0",
+    "@koa/bodyparser": "^5.0.0",
+    "@koa/router": "^12.0.1",
+    "async-retry": "^1.3.3",
+    "config": "^3.3.11",
+    "firebase": "^10.9.0",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.8.1",
+    "google-protobuf": "^3.21.2",
+    "koa": "^2.15.2",
+    "koa-logger": "^3.2.1",
+    "node-cache": "^5.1.2",
+    "pino": "^8.19.0"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^1.7.0",
+    "@types/async-retry": "^1.4.8",
+    "@types/config": "^3.3.4",
+    "@types/google-protobuf": "^3.15.12",
+    "@types/koa": "^2.15.0",
+    "@types/koa-logger": "^3.1.5",
+    "@types/koa__router": "^12.0.4",
+    "@types/lodash": "^4.17.0",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "eslint": "^8.57.0",
+    "firebase-functions-test": "^3.1.1",
+    "google-artifactregistry-auth": "^3.1.2",
+    "prettier": "3.2.5",
+    "protoc-gen-ts": "^0.8.7",
+    "typescript": "^5.4.3"
+  },
+  "engines": {
+    "node": "20"
+  }
+}

@@ -1,0 +1,8 @@
+*~
+*.log
+
+node_modules/
+
+functions/ingest/lib/**
+functions/ingest/src/generated/proto
+functions/ingest/.env.local
