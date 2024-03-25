@@ -23,7 +23,7 @@ const retryProps = {
 
 const escapeFilePart = (str: string) => str.replaceAll('%', '%25').replaceAll('/', '%2F');
 
-export const gcsSaveEvent = async (event: Event) => {
+export const gcsSaveEvent = async (event: Event): Promise<{ eventStorageId: string }> => {
   const name =
     'v1/c/' +
     event.customerId +
@@ -36,13 +36,14 @@ export const gcsSaveEvent = async (event: Event) => {
     '/i/' +
     escapeFilePart(event.instanceId);
 
-  await retry(
+  return await retry(
     async () => {
       await bucket.file(name).save(JSON.stringify(event), {
         contentType: 'application/json',
         gzip: true,
         resumable: false,
       });
+      return { eventStorageId: `${bucket.id}/${name}` };
     },
     {
       ...retryProps,

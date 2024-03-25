@@ -1,10 +1,12 @@
 import { Context, Next } from 'koa';
 import pino from 'pino';
-import { jsonToEvent } from './adapters';
+import { eventToActivity, jsonToEvent } from './adapters';
 import { gcsSaveEvent } from './cloudstore';
 import {
   getBannedEvents,
   insertUnbannedEventType,
+  saveAccount,
+  saveActivity,
   saveEvent,
   updateUnbannedEventType,
 } from './firestore';
@@ -30,7 +32,6 @@ export const deserializeClientId = (ctx: Context) => {
 
 const handleBannedEvents = async (
   bannedEvents: Record<string, boolean>,
-  ctx: Context,
   eventType: string,
   event: Event
 ) => {
@@ -64,15 +65,19 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
       event.customerId,
       event.feedId
     );
-    const { banned } = await handleBannedEvents(bannedEvents, ctx, eventType, event);
+    const { banned } = await handleBannedEvents(bannedEvents, eventType, event);
+    const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
     if (!banned) {
       await saveEvent(event);
+      const { activity, account } = eventToActivity[eventType](event, eventStorageId);
+      await Promise.all([
+        saveActivity(activity),
+        saveAccount(account, event.customerId, event.feedId),
+      ]);
       ctx.status = 202 /* Accepted */;
     } else {
       ctx.status = 200 /* OK */;
     }
-    await gcsSaveEvent({ ...event, banned });
-
     await next();
   } catch (e: unknown) {
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access

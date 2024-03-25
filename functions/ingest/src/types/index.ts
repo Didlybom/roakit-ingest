@@ -16,7 +16,87 @@ export interface Event {
   targetId?: number;
   targetType?: string;
   username?: string;
-  properties?: Record<string, unknown>;
+  properties?: Record<string, unknown>; // the raw webhook payload
   headers?: Record<string, string>;
   banned?: boolean;
+}
+
+export interface EventUser {
+  self: string;
+  accountId: string;
+  displayName?: string;
+  emailAddress?: string;
+  name?: string;
+}
+
+export type Action =
+  | 'created'
+  | 'updated'
+  | 'deleted'
+  | 'started'
+  | 'closed'
+  | 'released'
+  | 'archived';
+
+export interface Account {
+  id: string;
+  accountName: string;
+  accountUri: string;
+  timeZone: string;
+  lastUpdatedTimestamp?: number;
+}
+
+export interface Issue {
+  id: string;
+  key: string;
+  type: string;
+  summary: string;
+  description?: string;
+  created?: string;
+  createdBy?: string;
+  reportedBy?: string;
+  assignedTo?: string;
+  project?: {
+    id: string;
+    key: string;
+    name: string;
+    uri: string;
+  };
+  status?: {
+    id: string;
+    name: string;
+    uri: string;
+    category?: {
+      id: number;
+      key: string;
+      name: string;
+      uri: string;
+    };
+  };
+}
+
+export interface ChangeLog {
+  fieldId?: string;
+  field?: string;
+  oldId?: string;
+  oldValue?: string;
+  newId?: string;
+  newValue?: string;
+}
+
+export interface Activity {
+  objectId: string;
+  createdTimestamp: number;
+  customerId: number;
+  artifact: 'task' | 'code';
+  action: Action;
+  actorAccountId: string;
+  priority?: number;
+  initiative: string; // not undefined, so Firestore can index the field (as '')
+  effort?: number;
+  metadata: {
+    changeLog?: ChangeLog[];
+    issue?: Issue;
+    parent?: Issue;
+  };
 }
