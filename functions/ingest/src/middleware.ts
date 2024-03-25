@@ -66,12 +66,13 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
     );
     const { banned } = await handleBannedEvents(bannedEvents, ctx, eventType, event);
     if (!banned) {
-      await gcsSaveEvent(event);
       await saveEvent(event);
       ctx.status = 202 /* Accepted */;
     } else {
       ctx.status = 200 /* OK */;
     }
+    await gcsSaveEvent({ ...event, banned });
+
     await next();
   } catch (e: unknown) {
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access

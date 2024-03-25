@@ -18,4 +18,5 @@ export interface Event {
   username?: string;
   properties?: Record<string, unknown>;
   headers?: Record<string, string>;
+  banned?: boolean;
 }
