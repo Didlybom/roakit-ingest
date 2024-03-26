@@ -16,6 +16,7 @@ module.exports = {
   plugins: ['@typescript-eslint', '@stylistic'],
   ignorePatterns: ['/lib/**/*', '/src/generated/proto/**/*'],
   rules: {
+    'no-console': [2],
     'arrow-parens': [2, 'as-needed'],
     '@typescript-eslint/no-misused-promises': [
       2,
