@@ -12,6 +12,8 @@ import {
   toComment,
   toIssue,
   toPriority,
+  toSprint,
+  toTicket,
 } from '../types/jiraSchemaAdapter';
 
 const logger = pino({ name: 'adapters:jira' });
@@ -65,10 +67,13 @@ export const jiraEventToActivity: EventToActivity = (event: Event, eventStorageI
         ...(props.issue && { issue: toIssue(props.issue) }),
         ...(props.comment && { comment: toComment(props.comment) }),
         ...(props.attachment && { attachment: toAttachment(props.attachment) }),
+        ...(props.sprint && { sprint: toSprint(props.sprint) }),
       },
     };
 
-    return { activity, account };
+    const ticket = props.issue ? toTicket(props.issue) : undefined;
+
+    return { activity, account, ticket };
   } catch (e: unknown) {
     logger.error(e, 'jiraEventToActivity failed');
     throw e;

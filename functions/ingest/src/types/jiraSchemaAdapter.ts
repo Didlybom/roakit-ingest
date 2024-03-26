@@ -1,10 +1,12 @@
-import { Account, Action, Attachment, ChangeLog, Comment, Issue } from '.';
+import { Account, Action, Attachment, ChangeLog, Comment, Issue, Sprint, Ticket, Worklog } from '.';
 import {
   AttachmentSchema,
   ChangeLogSchema,
   CommentSchema,
   IssueSchema,
   JiraEventSchema,
+  SprintSchema,
+  WorklogSchema,
 } from './jiraSchema';
 
 export const toPriority = (props: JiraEventSchema) => {
@@ -43,21 +45,6 @@ export const toAccount = (props: JiraEventSchema) => {
     accountUri: account.self,
     timeZone: account.timeZone,
   } as Account;
-};
-
-export const toChangelog = (props: ChangeLogSchema) => {
-  const changeLog: ChangeLog[] = [];
-  props?.items.forEach(item => {
-    changeLog.push({
-      fieldId: item.fieldId,
-      field: item.field,
-      oldId: item.from ?? undefined,
-      oldValue: item.fromString ?? undefined,
-      newId: item.to ?? undefined,
-      newValue: item.toString ?? undefined,
-    });
-  });
-  return changeLog;
 };
 
 export const toProject = (props: IssueSchema['fields']['project']) => {
@@ -120,4 +107,56 @@ export const toAttachment = (props: AttachmentSchema) => {
     uri: props.self,
     created: props.created,
   } as Attachment;
+};
+
+export const toSprint = (props: SprintSchema) => {
+  return {
+    id: props.id,
+    name: props.name,
+    state: props.state,
+    createdDate: props.createdDate,
+    startDate: props.startDate,
+    endDate: props.endDate,
+    completeDate: props.completeDate,
+    uri: props.self,
+  } as Sprint;
+};
+
+export const toWorklog = (props: WorklogSchema) => {
+  return {
+    id: props.id,
+    author: props.author.accountId,
+    updateAuthor: props.updateAuthor?.accountId,
+    created: props.created,
+    updated: props.updated,
+    started: props.started,
+    timeSpentSeconds: props.timeSpentSeconds,
+    uri: props.self,
+  } as Worklog;
+};
+
+export const toChangelog = (props: ChangeLogSchema) => {
+  const changeLog: ChangeLog[] = [];
+  props?.items.forEach(item => {
+    changeLog.push({
+      fieldId: item.fieldId,
+      field: item.field,
+      oldId: item.from ?? undefined,
+      oldValue: item.fromString ?? undefined,
+      newId: item.to ?? undefined,
+      newValue: item.toString ?? undefined,
+    });
+  });
+  return changeLog;
+};
+
+export const toTicket = (props: IssueSchema) => {
+  return {
+    id: props.id,
+    key: props.key,
+    uri: props.self,
+    summary: props.fields.summary,
+    priority: +props.fields.priority.id,
+    ...(props.fields.project && { project: toProject(props.fields.project) }),
+  } as Ticket;
 };

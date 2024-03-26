@@ -38,6 +38,23 @@ export interface Account {
   lastUpdatedTimestamp?: number;
 }
 
+export interface Project {
+  id: string;
+  key: string;
+  name: string;
+  uri: string;
+}
+
+export interface Ticket {
+  id: string;
+  key: string;
+  summary: string;
+  uri?: string;
+  priority?: number;
+  project?: Project;
+  lastUpdatedTimestamp?: number;
+}
+
 export interface Issue {
   id: string;
   key: string;
@@ -49,12 +66,7 @@ export interface Issue {
   createdBy?: string;
   reportedBy?: string;
   assignedTo?: string;
-  project?: {
-    id: string;
-    key: string;
-    name: string;
-    uri: string;
-  };
+  project?: Project;
   status?: {
     id: string;
     name: string;
@@ -87,6 +99,28 @@ export interface Attachment {
   created?: string;
 }
 
+export interface Sprint {
+  id: string;
+  name: string;
+  state: string;
+  uri?: string;
+  created?: string;
+  startDate?: string;
+  endDate?: string;
+  completeDate?: string;
+}
+
+export interface Worklog {
+  id: string;
+  author: string;
+  uri?: string;
+  created?: string;
+  updated?: string;
+  updateAuthor?: string;
+  started?: string;
+  timeSpentSeconds?: number;
+}
+
 export interface ChangeLog {
   fieldId?: string;
   field?: string;
@@ -112,6 +146,8 @@ export interface Activity {
     issue?: Issue;
     comment?: Comment;
     attachment?: Attachment;
+    sprint?: Sprint;
+    worklog?: Worklog;
     parent?: Issue;
   };
 }

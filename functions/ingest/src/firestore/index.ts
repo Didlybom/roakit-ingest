@@ -3,7 +3,7 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import NodeCache from 'node-cache';
 import pino from 'pino';
-import type { Account, Activity, Event } from '../types';
+import type { Account, Activity, Event, Ticket } from '../types';
 import { ONE_DAY } from '../utils/dateUtils';
 
 const logger = pino({ name: 'firestore' });
@@ -15,11 +15,14 @@ if (getApps().length === 0) {
 const firestore = getFirestore();
 firestore.settings({ ignoreUndefinedProperties: true });
 
-const retryProps = {
-  // see https://github.com/tim-kos/node-retry#api
-  retries: 2,
-  factor: 2,
-  minTimeout: 500,
+const retryProps = (message: string) => {
+  return {
+    // see https://github.com/tim-kos/node-retry#api
+    retries: 2,
+    factor: 2,
+    minTimeout: 500,
+    onRetry: (e: unknown) => logger.warn(e, message),
+  };
 };
 
 const bannedEventsCache = new NodeCache({ stdTTL: 10 /* seconds */, useClones: false });
@@ -37,16 +40,10 @@ export const getBannedEvents = async (
   if (cached) {
     return cached;
   }
-  const bannedEvents = await retry(
-    async () => {
-      const doc = await firestore.doc(`customers/${customerId}/feeds/${feedId}`).get();
-      return doc.get('bannedEvents') as Record<string, boolean>;
-    },
-    {
-      ...retryProps,
-      onRetry: e => logger.warn(`Retrying getBannedEvents... ${e.message}`),
-    }
-  ).catch(e => {
+  const bannedEvents = await retry(async () => {
+    const doc = await firestore.doc(`customers/${customerId}/feeds/${feedId}`).get();
+    return doc.get('bannedEvents') as Record<string, boolean>;
+  }, retryProps('Retrying getBannedEvents...')).catch(e => {
     logger.error(e, 'getBannedEvents failed');
     throw e;
   });
@@ -61,17 +58,11 @@ export const insertUnbannedEventType = async (
   eventName: string
 ) => {
   deleteBannedEventsCacheKey(customerId, feedId);
-  await retry(
-    async () => {
-      await firestore
-        .doc(`customers/${customerId}/feeds/${feedId}`)
-        .set({ ['bannedEvents']: { [eventName]: false }, id: feedId, type });
-    },
-    {
-      ...retryProps,
-      onRetry: e => logger.warn(`Retrying insertUnbannedEventType... ${e.message}`),
-    }
-  ).catch(e => {
+  await retry(async () => {
+    await firestore
+      .doc(`customers/${customerId}/feeds/${feedId}`)
+      .set({ ['bannedEvents']: { [eventName]: false }, id: feedId, type });
+  }, retryProps('Retrying insertUnbannedEventType...')).catch(e => {
     logger.error(e, 'updateUnbannedEventType failed');
     throw e;
   });
@@ -83,89 +74,82 @@ export const updateUnbannedEventType = async (
   eventName: string
 ) => {
   deleteBannedEventsCacheKey(customerId, feedId);
-  await retry(
-    async () => {
-      await firestore
-        .doc(`customers/${customerId}/feeds/${feedId}`)
-        .update(`bannedEvents.${eventName}`, false);
-    },
-    {
-      ...retryProps,
-      onRetry: e => logger.warn(`Retrying updateUnbannedEventType... ${e.message}`),
-    }
-  ).catch(e => {
+  await retry(async () => {
+    await firestore
+      .doc(`customers/${customerId}/feeds/${feedId}`)
+      .update(`bannedEvents.${eventName}`, false);
+  }, retryProps('Retrying updateUnbannedEventType...')).catch(e => {
     logger.error(e, 'updateUnbannedEventType failed');
     throw e;
   });
 };
 
 export const saveEvent = async (event: Event) => {
-  await retry(
-    async () => {
-      await firestore
-        .doc(
-          `customers/${event.customerId}/feeds/${event.feedId}/events/${event.name}/instances/${event.instanceId}`
-        )
-        .set(event);
-    },
-    {
-      ...retryProps,
-      onRetry: e => logger.warn(`Retrying saveEvent... ${e.message}`),
-    }
-  ).catch(e => {
+  await retry(async () => {
+    await firestore
+      .doc(
+        `customers/${event.customerId}/feeds/${event.feedId}/events/${event.name}/instances/${event.instanceId}`
+      )
+      .set(event);
+  }, retryProps('Retrying saveEvent...')).catch(e => {
     logger.error(e, 'saveEvent failed');
     throw e;
   });
 };
 
 export const saveActivity = async (activity: Activity) => {
-  await retry(
-    async () => {
-      await firestore.collection(`customers/${activity.customerId}/activities/`).add(activity);
-    },
-    {
-      ...retryProps,
-      onRetry: e => logger.warn(`Retrying saveActivity... ${e.message}`),
-    }
-  ).catch(e => {
+  await retry(async () => {
+    await firestore.collection(`customers/${activity.customerId}/activities/`).add(activity);
+  }, retryProps('Retrying saveActivity...')).catch(e => {
     logger.error(e, 'saveActivity failed');
     throw e;
   });
 };
 
-export const saveAccount = async (
-  account: Account | undefined,
-  customerId: number,
-  feedId: number
-) => {
-  if (!account) {
-    return;
-  }
-  await retry(
-    async () => {
-      const accountDoc = firestore.doc(
-        `customers/${customerId}/feeds/${feedId}/accounts/${account.id}`
-      );
-      const accountData = (await accountDoc.get()).data();
-      const now = Date.now();
-      const updating = !!accountData && (accountData.lastUpdatedTimestamp ?? 0) < now - ONE_DAY;
+export const saveAccount = async (account: Account, customerId: number, feedId: number) => {
+  await retry(async () => {
+    const accountDoc = firestore.doc(
+      `customers/${customerId}/feeds/${feedId}/accounts/${account.id}`
+    );
+    const accountData = (await accountDoc.get()).data();
+    const now = Date.now();
+    const updating = !!accountData && (accountData.lastUpdatedTimestamp ?? 0) < now - ONE_DAY;
+    if (updating || !accountData) {
       await accountDoc.set(
         {
           accountName: account.accountName,
           accountUri: account.accountUri,
           timeZone: account.timeZone,
-          ...((updating || !accountData) && { lastUpdatedTimestamp: now }),
+          lastUpdatedTimestamp: now,
           ...(!accountData && { createdTimestamp: now }),
         },
         { merge: true }
       );
-    },
-    {
-      ...retryProps,
-      onRetry: e => logger.warn(`Retrying saveAccount... ${e.message}`),
     }
-  ).catch(e => {
+  }, retryProps('Retrying saveAccount...')).catch(e => {
     logger.error(e, 'saveAccount failed');
+    throw e;
+  });
+};
+
+export const saveTicket = async (ticket: Ticket, customerId: number) => {
+  await retry(async () => {
+    const ticketDoc = firestore.doc(`customers/${customerId}/tickets/${ticket.key}`);
+    const ticketData = (await ticketDoc.get()).data();
+    const now = Date.now();
+    await ticketDoc.set(
+      {
+        id: ticket.id,
+        summary: ticket.summary,
+        priority: ticket.priority,
+        project: ticket.project,
+        lastUpdatedTimestamp: now,
+        ...(!ticketData && { createdTimestamp: now }),
+      },
+      { merge: true }
+    );
+  }, retryProps('Retrying saveTicket...')).catch(e => {
+    logger.error(e, 'saveTicket failed');
     throw e;
   });
 };

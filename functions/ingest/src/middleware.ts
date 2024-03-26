@@ -8,6 +8,7 @@ import {
   saveAccount,
   saveActivity,
   saveEvent,
+  saveTicket,
   updateUnbannedEventType,
 } from './firestore';
 import type { Event, EventType } from './types';
@@ -65,15 +66,17 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
       event.customerId,
       event.feedId
     );
+
     const { banned } = await handleBannedEvents(bannedEvents, eventType, event);
     const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
     if (!banned) {
       await saveEvent(event);
-      const { activity, account } = eventToActivity[eventType](event, eventStorageId);
+      const { activity, account, ticket } = eventToActivity[eventType](event, eventStorageId);
       if (activity) {
         await Promise.all([
           saveActivity(activity),
-          saveAccount(account, event.customerId, event.feedId),
+          ...(account ? [saveAccount(account, event.customerId, event.feedId)] : []),
+          ...(ticket ? [saveTicket(ticket, event.customerId)] : []),
         ]);
       }
       ctx.status = 202 /* Accepted */;

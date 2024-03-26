@@ -72,6 +72,33 @@ const zattachment = z.object({
 });
 export type AttachmentSchema = z.infer<typeof zattachment>;
 
+const zsprint = z.object({
+  id: z.string(),
+  name: z.string(),
+  state: z.string(),
+  originalBoardId: z.number().optional(),
+  goal: z.string().optional(),
+  createdDate: zdatetime,
+  startDate: zdatetime,
+  endDate: zdatetime,
+  completeDate: zdatetime,
+  self: z.string().url(),
+});
+export type SprintSchema = z.infer<typeof zsprint>;
+
+const zworklog = z.object({
+  id: z.string(),
+  created: zdatetime,
+  updated: zdatetime,
+  started: zdatetime,
+  author: zuser,
+  updateAuthor: zuser.optional(),
+  issueId: z.string(),
+  timeSpentSeconds: z.number().optional(),
+  self: z.string().url(),
+});
+export type WorklogSchema = z.infer<typeof zworklog>;
+
 const zchangeLog = z.object({
   id: z.string(),
   items: z
@@ -93,6 +120,8 @@ export const jiraEventSchema = z.object({
   issue: zissue.optional(),
   comment: zcomment.optional(),
   attachment: zattachment.optional(),
+  sprint: zsprint.optional(),
+  worklog: zworklog.optional(),
   changelog: zchangeLog.optional(),
 });
 export type JiraEventSchema = z.infer<typeof jiraEventSchema>;
