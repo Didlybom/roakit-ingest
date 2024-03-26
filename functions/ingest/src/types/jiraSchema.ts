@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Account, Action, ChangeLog, EventUser, Issue } from '.';
+import { EventUser } from '.';
 
 export const mapEventUser = (user: EventUser | undefined) => {
   let username;
@@ -19,6 +19,8 @@ export const mapEventUser = (user: EventUser | undefined) => {
   return username;
 };
 
+const zdatetime = z.string().datetime({ offset: true });
+
 const zuser = z.object({
   self: z.string().url().optional(),
   accountId: z.string(),
@@ -26,6 +28,68 @@ const zuser = z.object({
   emailAddress: z.string().email().optional(),
   timeZone: z.string().optional(),
 });
+
+const zissue = z.object({
+  id: z.string(),
+  key: z.string(),
+  self: z.string().url(),
+  fields: z.object({
+    created: zdatetime.optional(),
+    creator: zuser.optional(),
+    reporter: zuser.optional(),
+    assignee: zuser.optional().nullable(),
+    issuetype: z.object({ name: z.string() }),
+    summary: z.string(),
+    description: z.string().optional().nullable(),
+    priority: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+    project: z.object({
+      id: z.string(),
+      key: z.string(),
+      name: z.string(),
+      self: z.string().url(),
+    }),
+    status: z.object({
+      id: z.string(),
+      name: z.string(),
+      self: z.string().url(),
+      statusCategory: z
+        .object({
+          id: z.number(),
+          key: z.string(),
+          name: z.string(),
+          self: z.string().url(),
+        })
+        .optional(),
+    }),
+  }),
+});
+export type IssueSchema = z.infer<typeof zissue>;
+
+const zcomment = z.object({
+  id: z.string(),
+  author: zuser,
+  body: z.string(),
+  created: zdatetime.optional(),
+  updated: zdatetime.optional(),
+  updateAuthor: zuser.optional(),
+  self: z.string().url(),
+});
+export type CommentSchema = z.infer<typeof zcomment>;
+
+const zattachment = z.object({
+  id: z.string(),
+  filename: z.string(),
+  mimeType: z.string().optional(),
+  created: zdatetime,
+  author: zuser,
+  content: z.string().url(),
+  size: z.number(),
+  self: z.string().url(),
+});
+export type AttachmentSchema = z.infer<typeof zattachment>;
 
 const zchangeLog = z.object({
   id: z.string(),
@@ -35,148 +99,19 @@ const zchangeLog = z.object({
       fieldId: z.string().optional(),
       fieldtype: z.string(),
       from: z.string().optional().nullable(),
-      fromString: z.string().optional(),
-      tmpToAccountId: z.string().optional(),
+      fromString: z.string().optional().nullable(),
       to: z.string().optional().nullable(),
-      toString: z.string().optional(),
+      toString: z.string().optional().nullable(),
     })
     .array(),
 });
+export type ChangeLogSchema = z.infer<typeof zchangeLog>;
 
 export const jiraEventSchema = z.object({
-  user: zuser,
-
-  issue: z.object({
-    id: z.string(),
-    key: z.string(),
-    self: z.string().url(),
-    fields: z.object({
-      created: z.string().optional(),
-      creator: zuser.optional(),
-      reporter: zuser.optional(),
-      assignee: zuser.optional(),
-      issuetype: z.object({ name: z.string() }),
-      summary: z.string(),
-      description: z.string().optional().nullable(),
-      priority: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-      project: z.object({
-        id: z.string(),
-        key: z.string(),
-        name: z.string(),
-        self: z.string().url(),
-      }),
-      status: z.object({
-        id: z.string(),
-        name: z.string(),
-        self: z.string().url(),
-        statusCategory: z
-          .object({
-            id: z.number(),
-            key: z.string(),
-            name: z.string(),
-            self: z.string().url(),
-          })
-          .optional(),
-      }),
-    }),
-  }),
-
-  comment: z.object({ author: zuser, body: z.string() }).optional(),
-
+  user: zuser.optional(),
+  issue: zissue.optional(),
+  comment: zcomment.optional(),
+  attachment: zattachment.optional(),
   changelog: zchangeLog.optional(),
 });
 export type JiraEventSchema = z.infer<typeof jiraEventSchema>;
-
-export const toActor = (props: JiraEventSchema) => {
-  return props.user.accountId;
-  // issue.fields.creator could be interesting too
-};
-
-export const toPriority = (props: JiraEventSchema) => {
-  const priorityId = props.issue.fields.priority.id;
-  return priorityId ? +priorityId : undefined;
-};
-
-const jiraActionSuffixes = [
-  'created',
-  'updated',
-  'deleted',
-  'started',
-  'closed',
-  'released',
-  'archived',
-] as Action[];
-export const toAction = (eventName: string): Action => {
-  for (const action of jiraActionSuffixes) {
-    if (eventName.endsWith(action)) {
-      return action;
-    }
-    // simplistic for now
-  }
-  throw new Error('Failed to map action for event name ' + eventName);
-};
-
-export const toAccount = (props: JiraEventSchema['user']) => {
-  return {
-    id: props.accountId,
-    accountName: props.displayName ?? props.emailAddress,
-    accountUri: props.self,
-    timeZone: props.timeZone,
-  } as Account;
-};
-
-export const toChangelog = (props: JiraEventSchema['changelog']): ChangeLog[] => {
-  const changeLog: ChangeLog[] = [];
-  props?.items.forEach(item => {
-    changeLog.push({
-      fieldId: item.fieldId,
-      field: item.field,
-      oldId: item.from ?? undefined,
-      oldValue: item.fromString,
-      newId: item.to ?? undefined,
-      newValue: item.toString,
-    });
-  });
-  return changeLog;
-};
-
-export const toProject = (props: JiraEventSchema['issue']['fields']['project']) => {
-  return { id: props.id, key: props.key, name: props.name, uri: props.self };
-};
-
-export const toStatus = (props: JiraEventSchema['issue']['fields']['status']) => {
-  return {
-    id: props.id,
-    name: props.name,
-    uri: props.self,
-    ...(props.statusCategory && {
-      category: {
-        id: props.statusCategory.id,
-        key: props.statusCategory.key,
-        name: props.statusCategory.name,
-        uri: props.statusCategory.self,
-      },
-    }),
-  };
-};
-
-export const toIssue = (props: JiraEventSchema['issue']) => {
-  const issue: Issue = {
-    id: props.id,
-    key: props.key,
-    created: props.fields.created,
-    type: props.fields.issuetype.name,
-    createdBy: props.fields.creator?.accountId,
-    reportedBy: props.fields.reporter?.accountId,
-    assignedTo: props.fields.assignee?.accountId,
-    summary: props.fields.summary,
-    description: props.fields.description ?? undefined,
-    ...(props.fields.project && { project: toProject(props.fields.project) }),
-    ...(props.fields.status && { status: toStatus(props.fields.status) }),
-    // FIXME parent field
-  };
-  return issue;
-};

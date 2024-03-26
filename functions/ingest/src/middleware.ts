@@ -70,10 +70,12 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
     if (!banned) {
       await saveEvent(event);
       const { activity, account } = eventToActivity[eventType](event, eventStorageId);
-      await Promise.all([
-        saveActivity(activity),
-        saveAccount(account, event.customerId, event.feedId),
-      ]);
+      if (activity) {
+        await Promise.all([
+          saveActivity(activity),
+          saveAccount(account, event.customerId, event.feedId),
+        ]);
+      }
       ctx.status = 202 /* Accepted */;
     } else {
       ctx.status = 200 /* OK */;

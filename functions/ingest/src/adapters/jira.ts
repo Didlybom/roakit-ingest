@@ -3,15 +3,16 @@ import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import type { Activity, Event, EventUser } from '../types';
+import { jiraEventSchema, mapEventUser } from '../types/jiraSchema';
 import {
-  jiraEventSchema,
-  mapEventUser,
   toAccount,
   toAction,
+  toAttachment,
   toChangelog,
+  toComment,
   toIssue,
   toPriority,
-} from '../types/jiraSchema';
+} from '../types/jiraSchemaAdapter';
 
 const logger = pino({ name: 'adapters:jira' });
 
@@ -48,20 +49,23 @@ export const jiraEventToActivity: EventToActivity = (event: Event, eventStorageI
   try {
     const props = jiraEventSchema.parse(event.properties);
 
-    const account = toAccount(props.user);
+    const account = toAccount(props);
 
     const activity: Activity = {
       objectId: eventStorageId,
+      event: event.name,
       createdTimestamp: event.createTimestamp,
       customerId: event.customerId,
-      artifact: 'task',
-      actorAccountId: account.id,
+      artifact: 'task', // FIXME task org,...
+      actorAccountId: account?.id,
       action: toAction(event.name),
       priority: toPriority(props),
       initiative: '', // FIXME map initiative
       metadata: {
         ...(props.changelog && { changeLog: toChangelog(props.changelog) }),
         ...(props.issue && { issue: toIssue(props.issue) }),
+        ...(props.comment && { comment: toComment(props.comment) }),
+        ...(props.attachment && { attachment: toAttachment(props.attachment) }),
       },
     };
 

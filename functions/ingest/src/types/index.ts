@@ -52,6 +52,7 @@ export interface Issue {
   type: string;
   summary: string;
   description?: string;
+  uri?: string;
   created?: string;
   createdBy?: string;
   reportedBy?: string;
@@ -75,6 +76,25 @@ export interface Issue {
   };
 }
 
+export interface Comment {
+  id: string;
+  author: string;
+  body: string;
+  uri?: string;
+  created?: string;
+  updated?: string;
+  updateAuthor?: string;
+}
+
+export interface Attachment {
+  id: string;
+  author: string;
+  filename: string;
+  mimeType?: string;
+  uri?: string;
+  created?: string;
+}
+
 export interface ChangeLog {
   fieldId?: string;
   field?: string;
@@ -86,17 +106,20 @@ export interface ChangeLog {
 
 export interface Activity {
   objectId: string;
+  event: string;
   createdTimestamp: number;
   customerId: number;
   artifact: 'task' | 'code';
   action: Action;
-  actorAccountId: string;
+  actorAccountId?: string;
   priority?: number;
   initiative: string; // not undefined, so Firestore can index the field (as '')
   effort?: number;
   metadata: {
     changeLog?: ChangeLog[];
     issue?: Issue;
+    comment?: Comment;
+    attachment?: Attachment;
     parent?: Issue;
   };
 }

@@ -15,9 +15,11 @@ export const jsonToEvent: Record<EventType, JsonToEvent> = {
 export type EventToActivity = (
   event: Event,
   eventStorageId: string
-) => { activity: Activity; account: Account };
+) => { activity?: Activity; account?: Account };
 
 export const eventToActivity: Record<EventType, EventToActivity> = {
-  [EventType.github]: jiraEventToActivity, // FIXME
+  [EventType.github]: () => {
+    return { activity: undefined, account: undefined };
+  }, // FIXME
   [EventType.jira]: jiraEventToActivity,
 };
