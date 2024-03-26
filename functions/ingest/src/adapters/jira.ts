@@ -2,8 +2,8 @@ import { Context } from 'koa';
 import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
-import type { Activity, Event, EventUser } from '../types';
-import { jiraEventSchema, mapEventUser } from '../types/jiraSchema';
+import type { Activity, Event } from '../types';
+import { jiraEventSchema } from '../types/jiraSchema';
 import {
   toAccount,
   toAction,
@@ -37,7 +37,6 @@ export const jiraJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, b
     eventTimestamp,
     name: name as string,
     hookId,
-    username: mapEventUser((properties as Event['properties'])?.user as EventUser),
     ...(headerWebhookFlow && { headers: { ['X-Atlassian-Webhook-Flow']: headerWebhookFlow } }),
     properties: properties as Event['properties'],
   };

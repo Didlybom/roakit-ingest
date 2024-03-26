@@ -21,14 +21,6 @@ export interface Event {
   banned?: boolean;
 }
 
-export interface EventUser {
-  self: string;
-  accountId: string;
-  displayName?: string;
-  emailAddress?: string;
-  name?: string;
-}
-
 export type Action =
   | 'created'
   | 'updated'

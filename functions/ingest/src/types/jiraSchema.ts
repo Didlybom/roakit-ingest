@@ -1,23 +1,4 @@
 import { z } from 'zod';
-import { EventUser } from '.';
-
-export const mapEventUser = (user: EventUser | undefined) => {
-  let username;
-  if (user) {
-    if (user.name) {
-      username = `name:${user.name}`;
-    } else if (user.accountId) {
-      username = `id:${user.accountId}`;
-    } else if (user.emailAddress) {
-      username = `email:${user.emailAddress}`;
-    } else if (user.displayName) {
-      username = `alias:${user.displayName}`;
-    } else if (user.self) {
-      username = `self:${user.self}`;
-    }
-  }
-  return username;
-};
 
 const zdatetime = z.string().datetime({ offset: true });
 
