@@ -1,8 +1,14 @@
 import { Context } from 'koa';
-import type { JsonToEvent } from '.';
+import pino from 'pino';
+import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { getHeader } from '../middleware';
 import type { Event } from '../types';
+import { githubEventSchema } from '../types/githubSchema';
+import { toAccount } from '../types/githubSchemaAdapter';
+
+const logger = pino({ name: 'adapters:github' });
+
 export const gitHubJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, body: unknown) => {
   const now = Date.now();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
@@ -29,4 +35,31 @@ export const gitHubJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId,
   };
 
   return event;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const githubEventToActivity: EventToActivity = (event: Event, eventStorageId: string) => {
+  try {
+    const props = githubEventSchema.parse(event.properties);
+
+    const account = toAccount(props);
+
+    //   const activity: Activity = {
+    //     objectId: eventStorageId,
+    //     event: event.name,
+    //     createdTimestamp: event.createTimestamp,
+    //     customerId: event.customerId,
+    //     artifact: 'task', // FIXME task org,...
+    //     actorAccountId: account?.id,
+    //     action: toAction(event.name),
+    //  //   priority: toPriority(props),
+    //     initiative: '', // FIXME map initiative
+    //     metadata: {},
+    //   };
+
+    return { activity: undefined, account };
+  } catch (e: unknown) {
+    logger.error(e, 'githubEventToActivity failed');
+    throw e;
+  }
 };
