@@ -17,13 +17,17 @@ const updatedEvents = [
   'pull_request_review_thread',
   'release',
 ];
-const createdEvents = ['push', 'pull_request_review_comment'];
+const createdEvents = ['push', 'pull_request_review_comment', 'create'];
+const deletedEvents = ['delete'];
 export const toAction = (eventName: string): Action => {
   if (updatedEvents.includes(eventName)) {
     return 'updated';
   }
   if (createdEvents.includes(eventName)) {
     return 'created';
+  }
+  if (deletedEvents.includes(eventName)) {
+    return 'deleted';
   }
   return 'unknown';
   // gitHub action field is also interesting
