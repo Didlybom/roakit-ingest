@@ -60,7 +60,7 @@ export const jiraEventToActivity: EventToActivity = (event: Event, eventStorageI
       artifact: 'task', // FIXME task org,...
       actorAccountId: account?.id,
       action: toAction(event.name),
-      priority: toPriority(props),
+      priority: toPriority(props) ?? -1,
       initiative: '', // FIXME map initiative
       metadata: {
         ...(props.changelog && { changeLog: toChangelog(props.changelog) }),

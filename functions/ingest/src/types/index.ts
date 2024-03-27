@@ -28,7 +28,8 @@ export type Action =
   | 'started'
   | 'closed'
   | 'released'
-  | 'archived';
+  | 'archived'
+  | 'unknown';
 
 export interface Account {
   id: string;
@@ -42,7 +43,7 @@ export interface Project {
   id: string;
   key: string;
   name: string;
-  uri: string;
+  uri?: string;
 }
 
 export interface Ticket {
@@ -62,7 +63,7 @@ export interface Issue {
   summary: string;
   description?: string;
   uri?: string;
-  created?: string;
+  created?: number;
   createdBy?: string;
   reportedBy?: string;
   assignedTo?: string;
@@ -85,8 +86,8 @@ export interface Comment {
   author: string;
   body: string;
   uri?: string;
-  created?: string;
-  updated?: string;
+  created?: number;
+  updated?: number;
   updateAuthor?: string;
 }
 
@@ -96,7 +97,7 @@ export interface Attachment {
   filename: string;
   mimeType?: string;
   uri?: string;
-  created?: string;
+  created?: number;
 }
 
 export interface Sprint {
@@ -104,20 +105,20 @@ export interface Sprint {
   name: string;
   state: string;
   uri?: string;
-  created?: string;
-  startDate?: string;
-  endDate?: string;
-  completeDate?: string;
+  created?: number;
+  startDate?: number;
+  endDate?: number;
+  completeDate?: number;
 }
 
 export interface Worklog {
   id: string;
   author: string;
   uri?: string;
-  created?: string;
-  updated?: string;
+  created?: number;
+  updated?: number;
   updateAuthor?: string;
-  started?: string;
+  started?: number;
   timeSpentSeconds?: number;
 }
 
@@ -128,6 +129,34 @@ export interface ChangeLog {
   oldValue?: string;
   newId?: string;
   newValue?: string;
+}
+
+export interface PullRequest {
+  title: string;
+  assignee?: string;
+  created?: number;
+  additions?: number;
+  deletions?: number;
+  changedFiles?: number;
+  commits?: number;
+  comments?: number;
+  ref?: string;
+  uri?: string;
+}
+
+export interface PullRequestComment {
+  body: string;
+  author: string;
+  uri?: string;
+}
+
+export interface Commit {
+  message: string;
+  uri?: string;
+}
+
+export interface Release {
+  body: string;
 }
 
 export interface Activity {
@@ -142,6 +171,7 @@ export interface Activity {
   initiative: string; // not undefined, so Firestore can index the field (as '')
   effort?: number;
   metadata: {
+    // project software (jira)
     changeLog?: ChangeLog[];
     issue?: Issue;
     comment?: Comment;
@@ -149,5 +179,13 @@ export interface Activity {
     sprint?: Sprint;
     worklog?: Worklog;
     parent?: Issue;
+
+    // code software (github)
+    codeAction?: string;
+    repository?: string;
+    pullRequest?: PullRequest;
+    pullRequestComment?: PullRequestComment;
+    commits?: Commit[];
+    release?: Release;
   };
 }

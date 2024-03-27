@@ -3,9 +3,18 @@ import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { getHeader } from '../middleware';
-import type { Event } from '../types';
+import type { Activity, Event } from '../types';
 import { githubEventSchema } from '../types/githubSchema';
-import { toAccount } from '../types/githubSchemaAdapter';
+import {
+  toAccount,
+  toAction,
+  toCodeAction,
+  toCommits,
+  toPullRequest,
+  toPullRequestComment,
+  toRelease,
+  toRepository,
+} from '../types/githubSchemaAdapter';
 
 const logger = pino({ name: 'adapters:github' });
 
@@ -44,20 +53,29 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
 
     const account = toAccount(props);
 
-    //   const activity: Activity = {
-    //     objectId: eventStorageId,
-    //     event: event.name,
-    //     createdTimestamp: event.createTimestamp,
-    //     customerId: event.customerId,
-    //     artifact: 'task', // FIXME task org,...
-    //     actorAccountId: account?.id,
-    //     action: toAction(event.name),
-    //  //   priority: toPriority(props),
-    //     initiative: '', // FIXME map initiative
-    //     metadata: {},
-    //   };
+    const activity: Activity = {
+      objectId: eventStorageId,
+      event: event.name,
+      createdTimestamp: event.createTimestamp,
+      customerId: event.customerId,
+      artifact: 'code', // FIXME code org,...
+      actorAccountId: account?.id,
+      action: toAction(event.name),
+      priority: -1, // FIXME map it from the ticket collection
+      initiative: '', // FIXME map initiative
+      metadata: {
+        ...(props.action && { codeAction: toCodeAction(props) }),
+        ...(props.repository && { repository: toRepository(props.repository) }),
+        ...(props.pull_request && { pullRequest: toPullRequest(props.pull_request) }),
+        ...(props.comment && {
+          pullRequestComment: toPullRequestComment(props.comment),
+        }),
+        ...(props.commits && { commits: toCommits(props.commits) }),
+        ...(props.release && { release: toRelease(props.release) }),
+      },
+    };
 
-    return { activity: undefined, account };
+    return { activity, account };
   } catch (e: unknown) {
     logger.error(e, 'githubEventToActivity failed');
     throw e;

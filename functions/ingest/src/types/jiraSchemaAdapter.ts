@@ -1,4 +1,5 @@
 import { Account, Action, Attachment, ChangeLog, Comment, Issue, Sprint, Ticket, Worklog } from '.';
+import { toTimestamp } from '../utils/dateUtils';
 import {
   AttachmentSchema,
   ChangeLogSchema,
@@ -8,11 +9,6 @@ import {
   SprintSchema,
   WorklogSchema,
 } from './jiraSchema';
-
-export const toPriority = (props: JiraEventSchema) => {
-  const priorityId = props.issue?.fields.priority.id;
-  return priorityId ? +priorityId : undefined;
-};
 
 const jiraActionSuffixes = [
   'created',
@@ -30,7 +26,7 @@ export const toAction = (eventName: string): Action => {
     }
     // simplistic for now
   }
-  throw new Error('Failed to map action for event name ' + eventName);
+  return 'unknown';
 };
 
 export const toAccount = (props: JiraEventSchema) => {
@@ -45,6 +41,11 @@ export const toAccount = (props: JiraEventSchema) => {
     accountUri: account.self,
     timeZone: account.timeZone,
   } as Account;
+};
+
+export const toPriority = (props: JiraEventSchema) => {
+  const priorityId = props.issue?.fields.priority.id;
+  return priorityId ? +priorityId : undefined;
 };
 
 export const toProject = (props: IssueSchema['fields']['project']) => {
@@ -67,12 +68,12 @@ export const toStatus = (props: IssueSchema['fields']['status']) => {
   };
 };
 
-export const toIssue = (props: IssueSchema) => {
+export const toIssue = (props: IssueSchema): Issue => {
   const issue: Issue = {
     id: props.id,
     key: props.key,
     uri: props.self,
-    created: props.fields.created,
+    created: toTimestamp(props.fields.created),
     type: props.fields.issuetype.name,
     createdBy: props.fields.creator?.accountId,
     reportedBy: props.fields.reporter?.accountId,
@@ -86,56 +87,56 @@ export const toIssue = (props: IssueSchema) => {
   return issue;
 };
 
-export const toComment = (props: CommentSchema) => {
+export const toComment = (props: CommentSchema): Comment => {
   return {
     id: props.id,
     author: props.author.accountId,
     body: props.body,
     uri: props.self,
-    created: props.created,
-    updated: props.updated,
+    created: toTimestamp(props.created),
+    updated: toTimestamp(props.updated),
     updateAuthor: props.updateAuthor?.accountId,
-  } as Comment;
+  };
 };
 
-export const toAttachment = (props: AttachmentSchema) => {
+export const toAttachment = (props: AttachmentSchema): Attachment => {
   return {
     id: props.id,
     author: props.author.accountId,
     filename: props.filename,
     mimeType: props.mimeType,
     uri: props.self,
-    created: props.created,
-  } as Attachment;
+    created: toTimestamp(props.created),
+  };
 };
 
-export const toSprint = (props: SprintSchema) => {
+export const toSprint = (props: SprintSchema): Sprint => {
   return {
     id: props.id,
     name: props.name,
     state: props.state,
-    createdDate: props.createdDate,
-    startDate: props.startDate,
-    endDate: props.endDate,
-    completeDate: props.completeDate,
+    created: toTimestamp(props.createdDate),
+    startDate: toTimestamp(props.startDate),
+    endDate: toTimestamp(props.endDate),
+    completeDate: toTimestamp(props.completeDate),
     uri: props.self,
-  } as Sprint;
+  };
 };
 
-export const toWorklog = (props: WorklogSchema) => {
+export const toWorklog = (props: WorklogSchema): Worklog => {
   return {
     id: props.id,
     author: props.author.accountId,
     updateAuthor: props.updateAuthor?.accountId,
-    created: props.created,
-    updated: props.updated,
-    started: props.started,
+    created: toTimestamp(props.created),
+    updated: toTimestamp(props.updated),
+    started: toTimestamp(props.started),
     timeSpentSeconds: props.timeSpentSeconds,
     uri: props.self,
-  } as Worklog;
+  };
 };
 
-export const toChangelog = (props: ChangeLogSchema) => {
+export const toChangelog = (props: ChangeLogSchema): ChangeLog[] => {
   const changeLog: ChangeLog[] = [];
   props?.items.forEach(item => {
     changeLog.push({
@@ -150,7 +151,7 @@ export const toChangelog = (props: ChangeLogSchema) => {
   return changeLog;
 };
 
-export const toTicket = (props: IssueSchema) => {
+export const toTicket = (props: IssueSchema): Ticket => {
   return {
     id: props.id,
     key: props.key,
@@ -158,5 +159,5 @@ export const toTicket = (props: IssueSchema) => {
     summary: props.fields.summary,
     priority: +props.fields.priority.id,
     ...(props.fields.project && { project: toProject(props.fields.project) }),
-  } as Ticket;
+  };
 };
