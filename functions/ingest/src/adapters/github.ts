@@ -8,6 +8,7 @@ import { githubEventSchema } from '../types/githubSchema';
 import {
   toAccount,
   toAction,
+  toArtifact,
   toCodeAction,
   toCommits,
   toPullRequest,
@@ -52,15 +53,16 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
     const props = githubEventSchema.parse(event.properties);
 
     const account = toAccount(props);
+    const codeAction = toCodeAction(props);
 
     const activity: Activity = {
       objectId: eventStorageId,
       event: event.name,
       createdTimestamp: event.createTimestamp,
       customerId: event.customerId,
-      artifact: 'code', // FIXME code org,...
+      artifact: toArtifact(event.name),
       actorAccountId: account?.id,
-      action: toAction(event.name),
+      action: toAction(event.name, codeAction),
       priority: -1, // FIXME map it from the ticket collection
       initiative: '', // FIXME map initiative
       metadata: {

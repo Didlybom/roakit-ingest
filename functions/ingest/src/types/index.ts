@@ -159,12 +159,14 @@ export interface Release {
   body: string;
 }
 
+export type Artifact = 'task' | 'taskOrg' | 'code' | 'codeOrg';
+
 export interface Activity {
   objectId: string;
   event: string;
   createdTimestamp: number;
   customerId: number;
-  artifact: 'task' | 'code';
+  artifact: Artifact;
   action: Action;
   actorAccountId?: string;
   priority?: number;

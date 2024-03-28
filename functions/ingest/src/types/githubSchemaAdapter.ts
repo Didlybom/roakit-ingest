@@ -1,4 +1,5 @@
 import { Account, Action, Commit, PullRequest, PullRequestComment, Release } from '.';
+import type { Artifact } from '../types';
 import { toTimestamp } from '../utils/dateUtils';
 import {
   CommentSchema,
@@ -9,17 +10,24 @@ import {
   RepositorySchema,
 } from './githubSchema';
 
+export const toArtifact = (eventName: string): Artifact => {
+  return eventName === 'repository' || eventName === 'membership' ? 'codeOrg' : 'code';
+};
+
 const updatedEvents = [
   'issue_comment',
   'pull_request',
   'pull_request_review',
   'pull_request_review_comment',
   'pull_request_review_thread',
+  'label',
+  'membership',
   'release',
 ];
 const createdEvents = ['push', 'pull_request_review_comment', 'create'];
 const deletedEvents = ['delete'];
-export const toAction = (eventName: string): Action => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const toAction = (eventName: string, codeAction?: string): Action => {
   if (updatedEvents.includes(eventName)) {
     return 'updated';
   }
@@ -30,7 +38,6 @@ export const toAction = (eventName: string): Action => {
     return 'deleted';
   }
   return 'unknown';
-  // gitHub action field is also interesting
 };
 
 export const toAccount = (props: GitHubEventSchema) => {
