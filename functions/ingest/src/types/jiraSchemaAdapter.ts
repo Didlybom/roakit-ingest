@@ -1,4 +1,4 @@
-import { Account, Action, Attachment, ChangeLog, Comment, Issue, Sprint, Ticket, Worklog } from '.';
+import { Attachment, ChangeLog, Comment, Issue, Sprint, Ticket, Worklog } from '.';
 import { toTimestamp } from '../utils/dateUtils';
 import {
   AttachmentSchema,
@@ -9,39 +9,6 @@ import {
   SprintSchema,
   WorklogSchema,
 } from './jiraSchema';
-
-const jiraActionSuffixes = [
-  'created',
-  'updated',
-  'deleted',
-  'started',
-  'closed',
-  'released',
-  'archived',
-] as Action[];
-export const toAction = (eventName: string): Action => {
-  for (const action of jiraActionSuffixes) {
-    if (eventName.endsWith(action)) {
-      return action;
-    }
-    // simplistic for now
-  }
-  return 'unknown';
-};
-
-export const toAccount = (props: JiraEventSchema) => {
-  const account = props.comment?.author ?? props.attachment?.author ?? props.user;
-  // issue.fields.creator/assignee could be interesting too, depending on action
-  if (!account) {
-    return undefined;
-  }
-  return {
-    id: account.accountId,
-    accountName: account.displayName ?? account.emailAddress,
-    accountUri: account.self,
-    timeZone: account.timeZone,
-  } as Account;
-};
 
 export const toPriority = (props: JiraEventSchema) => {
   const priorityId = props.issue?.fields.priority.id;

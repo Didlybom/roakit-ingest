@@ -2,13 +2,11 @@ import { Context } from 'koa';
 import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
+import { inferAccount, inferAction, inferArtifact } from '../inference/githubInference';
 import { getHeader } from '../middleware';
 import type { Activity, Event } from '../types';
 import { githubEventSchema } from '../types/githubSchema';
 import {
-  toAccount,
-  toAction,
-  toArtifact,
   toCodeAction,
   toCommits,
   toPullRequest,
@@ -52,7 +50,7 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
   try {
     const props = githubEventSchema.parse(event.properties);
 
-    const account = toAccount(props);
+    const account = inferAccount(props);
     const codeAction = toCodeAction(props);
 
     const activity: Activity = {
@@ -60,9 +58,9 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
       event: event.name,
       createdTimestamp: event.createTimestamp,
       customerId: event.customerId,
-      artifact: toArtifact(event.name),
+      artifact: inferArtifact(event.name),
       actorAccountId: account?.id,
-      action: toAction(event.name, codeAction),
+      action: inferAction(event.name, codeAction),
       priority: -1, // FIXME map it from the ticket collection
       initiative: '', // FIXME map initiative
       metadata: {

@@ -2,11 +2,10 @@ import { Context } from 'koa';
 import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
+import { inferAccount, inferAction, inferArtifact } from '../inference/jiraInference';
 import type { Activity, Event } from '../types';
 import { jiraEventSchema } from '../types/jiraSchema';
 import {
-  toAccount,
-  toAction,
   toAttachment,
   toChangelog,
   toComment,
@@ -50,16 +49,16 @@ export const jiraEventToActivity: EventToActivity = (event: Event, eventStorageI
   try {
     const props = jiraEventSchema.parse(event.properties);
 
-    const account = toAccount(props);
+    const account = inferAccount(props);
 
     const activity: Activity = {
       objectId: eventStorageId,
       event: event.name,
       createdTimestamp: event.createTimestamp,
       customerId: event.customerId,
-      artifact: 'task', // FIXME task org,...
+      artifact: inferArtifact(event.name),
       actorAccountId: account?.id,
-      action: toAction(event.name),
+      action: inferAction(event.name),
       priority: toPriority(props) ?? -1,
       initiative: '', // FIXME map initiative
       metadata: {
