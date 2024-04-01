@@ -101,6 +101,7 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
     }
     await next();
   } catch (e: unknown) {
+    logger.error(e, 'eventMiddleware failed');
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     ctx.status = ((e as any).status as number) ?? 500;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
@@ -117,6 +118,7 @@ export const signedEventMiddleware =
 export const getHeader = (ctx: Context, headerName: string) => {
   const header = ctx.get(headerName);
   if (!header) {
+    logger.error(`Received request with missing header ${headerName}`);
     ctx.throw(400 /* Bad request */, `Missing header ${headerName}`);
   }
   return header;

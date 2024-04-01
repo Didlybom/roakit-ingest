@@ -11,10 +11,12 @@ const HEX_ENCODING: crypto.BinaryToTextEncoding = 'hex';
 
 export const verifyHmacSignature = (headerName: string, secret: Uint8Array, ctx: Context) => {
   if (ctx.request.is(['application/json']) !== 'application/json') {
+    logger.error('Received request not application/json');
     ctx.throw(415 /* Unsupported Media Type */, 'Content-Type must be application/json');
   }
   const signature = ctx.request.get(headerName);
   if (!signature) {
+    logger.error('Received request missing signature');
     ctx.throw(400 /* Bad request */, `Missing "${headerName}" header`);
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
@@ -30,7 +32,7 @@ export const verifyHmacSignature = (headerName: string, secret: Uint8Array, ctx:
     return;
   }
 
-  logger.error(`Signature hash <${signature}> doesn't match body hash <sha256=${digest}>`);
+  logger.error(`Request signature hash <${signature}> doesn't match body hash <sha256=${digest}>`);
   ctx.throw(400 /* Bad request */, `Invalid ${headerName}`);
 };
 
@@ -49,6 +51,7 @@ export const decodeClientId = (secretKey: Buffer, encodedClientId: string) => {
     .substring(0, CHECKSUM_LENGTH);
 
   if (checksum !== payload.checksum) {
+    logger.error('Received request with invalid clientId');
     throw new Error('Invalid checksum');
   }
 
