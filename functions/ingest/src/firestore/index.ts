@@ -26,10 +26,13 @@ const retryProps = (message: string) => {
 };
 
 const bannedEventsCache = new NodeCache({ stdTTL: 10 /* seconds */, useClones: false });
-const bannedEventsCacheKey = (customerId: number, feedId: number) => customerId + ';' + feedId;
+const bannedEventsCacheKey = (customerId: number, feedId: number) => `${customerId};${feedId}`;
 const deleteBannedEventsCacheKey = (customerId: number, feedId: number) => {
   bannedEventsCache.del(bannedEventsCacheKey(customerId, feedId));
 };
+
+const bannedAccountsCache = new NodeCache({ stdTTL: 10 /* seconds */, useClones: false });
+const bannedAccountsCacheKey = (customerId: number, feedId: number) => `${customerId};${feedId}`;
 
 export const getBannedEvents = async (
   customerId: number,
@@ -47,7 +50,7 @@ export const getBannedEvents = async (
     logger.error(e, 'getBannedEvents failed');
     throw e;
   });
-  bannedEventsCache.set(cacheKey, bannedEvents, 10);
+  bannedEventsCache.set(cacheKey, bannedEvents);
   return bannedEvents;
 };
 
@@ -82,6 +85,26 @@ export const updateUnbannedEventType = async (
     logger.error(e, 'updateUnbannedEventType failed');
     throw e;
   });
+};
+
+export const getBannedAccounts = async (
+  customerId: number,
+  feedId: number
+): Promise<Record<string, boolean>> => {
+  const cacheKey = bannedAccountsCacheKey(customerId, feedId);
+  const cached: Record<string, boolean> | undefined = bannedAccountsCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const bannedAccounts = await retry(async () => {
+    const doc = await firestore.doc(`customers/${customerId}/feeds/${feedId}`).get();
+    return doc.get('bannedAccounts') as Record<string, boolean>;
+  }, retryProps('Retrying getBannedAccounts...')).catch(e => {
+    logger.error(e, 'getBannedAccounts failed');
+    throw e;
+  });
+  bannedAccountsCache.set(cacheKey, bannedAccounts);
+  return bannedAccounts;
 };
 
 export const saveEvent = async (event: Event) => {

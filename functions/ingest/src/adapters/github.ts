@@ -32,6 +32,8 @@ export const gitHubJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId,
     instanceId: ctx.request.get('X-GitHub-Delivery') || `${eventTimestamp}`,
     customerId: clientId.customerId,
     feedId: clientId.feedId,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    senderAccount: (body as any).sender?.login as string,
     createTimestamp: now,
     eventTimestamp,
     name: getHeader(ctx, 'X-GitHub-Event'),

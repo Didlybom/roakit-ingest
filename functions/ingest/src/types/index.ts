@@ -15,7 +15,7 @@ export interface Event {
   hookId?: string;
   targetId?: number;
   targetType?: string;
-  username?: string;
+  senderAccount?: string;
   properties?: Record<string, unknown>; // the raw webhook payload
   headers?: Record<string, string>;
   banned?: boolean;

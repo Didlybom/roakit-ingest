@@ -3,6 +3,7 @@ import pino from 'pino';
 import { eventToActivity, jsonToEvent } from './adapters';
 import { gcsSaveEvent } from './cloudstore';
 import {
+  getBannedAccounts,
   getBannedEvents,
   insertUnbannedEventType,
   saveAccount,
@@ -51,6 +52,19 @@ const handleBannedEvents = async (
   return { banned: false };
 };
 
+const handleBannedAccounts = (bannedAccounts: Record<string, boolean>, event: Event) => {
+  if (!event.senderAccount) {
+    return { banned: false };
+  }
+  if (event.senderAccount in bannedAccounts) {
+    if (bannedAccounts[event.senderAccount]) {
+      return { banned: true };
+    }
+    return { banned: false };
+  }
+  return { banned: false };
+};
+
 export const eventMiddleware = (eventType: EventType) => async (ctx: Context, next: Next) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   const body = (ctx.req as any).body as unknown;
@@ -62,12 +76,14 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
   const event = jsonToEvent[eventType](ctx, clientId, body);
 
   try {
-    const bannedEvents: Record<string, boolean> = await getBannedEvents(
-      event.customerId,
-      event.feedId
-    );
-
-    const { banned } = await handleBannedEvents(bannedEvents, eventType, event);
+    const [bannedEvents, bannedAccounts] = await Promise.all([
+      getBannedEvents(event.customerId, event.feedId),
+      getBannedAccounts(event.customerId, event.feedId),
+    ]);
+    let { banned } = await handleBannedEvents(bannedEvents, eventType, event);
+    if (!banned) {
+      banned = handleBannedAccounts(bannedAccounts, event).banned;
+    }
     const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
     if (!banned) {
       await saveEvent(event);

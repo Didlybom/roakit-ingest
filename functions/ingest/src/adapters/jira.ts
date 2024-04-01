@@ -34,6 +34,8 @@ export const jiraJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, b
     instanceId,
     customerId: clientId.customerId,
     feedId: clientId.feedId,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    senderAccount: properties.user.accountId as string,
     createTimestamp: now,
     eventTimestamp,
     name: name as string,
