@@ -6,7 +6,7 @@ const zuser = z.object({
   self: z.string().url().optional(),
   accountId: z.string(),
   displayName: z.string().optional(),
-  emailAddress: z.string().email().optional(),
+  emailAddress: z.string().optional(),
   timeZone: z.string().optional(),
 });
 
@@ -73,15 +73,15 @@ const zattachment = z.object({
 export type AttachmentSchema = z.infer<typeof zattachment>;
 
 const zsprint = z.object({
-  id: z.string(),
+  id: z.string().or(z.number()),
   name: z.string(),
   state: z.string(),
   originalBoardId: z.number().optional(),
   goal: z.string().optional(),
   createdDate: zdatetime,
-  startDate: zdatetime,
-  endDate: zdatetime,
-  completeDate: zdatetime,
+  startDate: zdatetime.optional(),
+  endDate: zdatetime.optional(),
+  completeDate: zdatetime.optional(),
   self: z.string().url(),
 });
 export type SprintSchema = z.infer<typeof zsprint>;

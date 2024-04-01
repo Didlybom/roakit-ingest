@@ -45,7 +45,7 @@ export const getBannedEvents = async (
   }
   const bannedEvents = await retry(async () => {
     const doc = await firestore.doc(`customers/${customerId}/feeds/${feedId}`).get();
-    return doc.get('bannedEvents') as Record<string, boolean>;
+    return (doc.get('bannedEvents') as Record<string, boolean>) ?? {};
   }, retryProps('Retrying getBannedEvents...')).catch(e => {
     logger.error(e, 'getBannedEvents failed');
     throw e;
@@ -98,7 +98,7 @@ export const getBannedAccounts = async (
   }
   const bannedAccounts = await retry(async () => {
     const doc = await firestore.doc(`customers/${customerId}/feeds/${feedId}`).get();
-    return doc.get('bannedAccounts') as Record<string, boolean>;
+    return (doc.get('bannedAccounts') as Record<string, boolean>) ?? {};
   }, retryProps('Retrying getBannedAccounts...')).catch(e => {
     logger.error(e, 'getBannedAccounts failed');
     throw e;

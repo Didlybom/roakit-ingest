@@ -101,7 +101,7 @@ export interface Attachment {
 }
 
 export interface Sprint {
-  id: string;
+  id: string | number;
   name: string;
   state: string;
   uri?: string;
