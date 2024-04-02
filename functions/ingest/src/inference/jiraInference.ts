@@ -3,6 +3,9 @@ import { JiraEventSchema } from '../types/jiraSchema';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const inferArtifact = (eventName: string): Artifact => {
+  if (eventName.startsWith('board')) {
+    return 'taskOrg';
+  }
   return 'task'; // obviously need improvement
 };
 
@@ -16,6 +19,9 @@ const jiraActionSuffixes = [
   'archived',
 ] as Action[];
 export const inferAction = (eventName: string): Action => {
+  if (eventName.startsWith('comment')) {
+    return 'updated';
+  }
   for (const action of jiraActionSuffixes) {
     if (eventName.endsWith(action)) {
       return action;
