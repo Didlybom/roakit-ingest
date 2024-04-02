@@ -3,7 +3,7 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import NodeCache from 'node-cache';
 import pino from 'pino';
-import type { Account, Activity, Event, Identity, IdentityMap, Ticket } from '../types';
+import type { Account, Activity, Event, IdentityMap, Ticket } from '../types';
 import { identitySchema } from '../types/roakitSchema';
 import { ONE_DAY } from '../utils/dateUtils';
 
@@ -136,13 +136,20 @@ export const getIdentities = async (
   return identities;
 };
 
-export const insertIdentity = async (customerId: number, identity: Omit<Identity, 'id'>) => {
+export const insertAccountToReview = async (
+  customerId: number,
+  feedId: number,
+  account: Account
+) => {
   await retry(async () => {
-    await firestore
-      .collection(`customers/${customerId}/identities`)
-      .add({ createdDate: Date.now(), ...identity });
-  }, retryProps('Retrying insertIdentity...')).catch(e => {
-    logger.error(e, 'insertIdentity failed');
+    const doc = firestore
+      .collection(`customers/${customerId}/feeds/${feedId}/accountsToReview`)
+      .doc(account.id);
+    if (!(await doc.get()).exists) {
+      await doc.set({ createdDate: Date.now(), ...account });
+    }
+  }, retryProps('Retrying insertAccountToReview...')).catch(e => {
+    logger.error(e, 'insertAccountToReview failed');
     throw e;
   });
 };

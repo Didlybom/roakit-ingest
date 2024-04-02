@@ -5,6 +5,8 @@ import { gcsSaveEvent } from './cloudstore';
 import {
   getBannedAccounts,
   getBannedEvents,
+  getIdentities,
+  insertAccountToReview,
   insertUnbannedEventType,
   saveAccount,
   saveActivity,
@@ -12,7 +14,7 @@ import {
   saveTicket,
   updateUnbannedEventType,
 } from './firestore';
-import { type Event, type EventType } from './types';
+import { Account, findIdentity, type Event, type EventType, type IdentityMap } from './types';
 import { decodeClientId, verifyHmacSignature } from './utils/cryptoUtils';
 
 const logger = pino({ name: 'middleware' });
@@ -65,6 +67,22 @@ const handleBannedAccounts = (bannedAccounts: Record<string, boolean>, event: Ev
   return { banned: false };
 };
 
+const handleIdentities = async (
+  customerId: number,
+  feedId: number,
+  identities: IdentityMap,
+  account: Account
+) => {
+  let foundIdentity = findIdentity(identities, feedId, account.id);
+  if (!foundIdentity) {
+    const freshIdentities = await getIdentities(customerId, { noCache: true });
+    foundIdentity = findIdentity(freshIdentities, feedId, account.id);
+  }
+  if (!foundIdentity) {
+    await insertAccountToReview(customerId, feedId, account);
+  }
+};
+
 export const eventMiddleware = (eventType: EventType) => async (ctx: Context, next: Next) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   const body = (ctx.req as any).body as unknown;
@@ -76,18 +94,23 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
   const event = jsonToEvent[eventType](ctx, clientId, body);
 
   try {
-    const [bannedEvents, bannedAccounts] = await Promise.all([
+    const [bannedEvents, bannedAccounts, identities] = await Promise.all([
       getBannedEvents(event.customerId, event.feedId),
       getBannedAccounts(event.customerId, event.feedId),
+      getIdentities(event.customerId),
     ]);
     let { banned } = await handleBannedEvents(bannedEvents, eventType, event);
     if (!banned) {
       banned = handleBannedAccounts(bannedAccounts, event).banned;
     }
+
     const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
     if (!banned) {
-      await saveEvent(event);
       const { activity, account, ticket } = eventToActivity[eventType](event, eventStorageId);
+      await saveEvent(event);
+      if (account) {
+        await handleIdentities(event.customerId, event.feedId, identities, account);
+      }
       if (activity) {
         await Promise.all([
           saveActivity(activity),
