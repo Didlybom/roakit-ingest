@@ -1,4 +1,4 @@
-import { IdentityMap, findIdentity } from '../../src/types';
+import { IdentityMap, findIdentity } from '../../types';
 
 test('findIdentity', () => {
   const identities: IdentityMap = new Map([
