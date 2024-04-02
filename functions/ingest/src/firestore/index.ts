@@ -3,7 +3,8 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import NodeCache from 'node-cache';
 import pino from 'pino';
-import type { Account, Activity, Event, Ticket } from '../types';
+import type { Account, Activity, Event, Identity, IdentityMap, Ticket } from '../types';
+import { identitySchema } from '../types/roakitSchema';
 import { ONE_DAY } from '../utils/dateUtils';
 
 const logger = pino({ name: 'firestore' });
@@ -25,20 +26,22 @@ const retryProps = (message: string) => {
   };
 };
 
-const bannedEventsCache = new NodeCache({ stdTTL: 10 /* seconds */, useClones: false });
-const bannedEventsCacheKey = (customerId: number, feedId: number) => `${customerId};${feedId}`;
+const makeCacheKey = (customerId: number, feedId: number) => `${customerId};${feedId}`;
+
+const bannedEventsCache = new NodeCache({ stdTTL: 30 /* seconds */, useClones: false });
 const deleteBannedEventsCacheKey = (customerId: number, feedId: number) => {
-  bannedEventsCache.del(bannedEventsCacheKey(customerId, feedId));
+  bannedEventsCache.del(makeCacheKey(customerId, feedId));
 };
 
-const bannedAccountsCache = new NodeCache({ stdTTL: 10 /* seconds */, useClones: false });
-const bannedAccountsCacheKey = (customerId: number, feedId: number) => `${customerId};${feedId}`;
+const bannedAccountsCache = new NodeCache({ stdTTL: 30 /* seconds */, useClones: false });
+
+const identitiesCache = new NodeCache({ stdTTL: 30 /* seconds */, useClones: false });
 
 export const getBannedEvents = async (
   customerId: number,
   feedId: number
 ): Promise<Record<string, boolean>> => {
-  const cacheKey = bannedEventsCacheKey(customerId, feedId);
+  const cacheKey = makeCacheKey(customerId, feedId);
   const cached: Record<string, boolean> | undefined = bannedEventsCache.get(cacheKey);
   if (cached) {
     return cached;
@@ -66,7 +69,7 @@ export const insertUnbannedEventType = async (
       .doc(`customers/${customerId}/feeds/${feedId}`)
       .set({ ['bannedEvents']: { [eventName]: false }, id: feedId, type });
   }, retryProps('Retrying insertUnbannedEventType...')).catch(e => {
-    logger.error(e, 'updateUnbannedEventType failed');
+    logger.error(e, 'insertUnbannedEventType failed');
     throw e;
   });
 };
@@ -91,7 +94,7 @@ export const getBannedAccounts = async (
   customerId: number,
   feedId: number
 ): Promise<Record<string, boolean>> => {
-  const cacheKey = bannedAccountsCacheKey(customerId, feedId);
+  const cacheKey = makeCacheKey(customerId, feedId);
   const cached: Record<string, boolean> | undefined = bannedAccountsCache.get(cacheKey);
   if (cached) {
     return cached;
@@ -105,6 +108,43 @@ export const getBannedAccounts = async (
   });
   bannedAccountsCache.set(cacheKey, bannedAccounts);
   return bannedAccounts;
+};
+
+export const getIdentities = async (
+  customerId: number,
+  options: { noCache: boolean } = { noCache: false }
+): Promise<IdentityMap> => {
+  const cacheKey = customerId;
+  if (!options?.noCache) {
+    const cached: IdentityMap | undefined = identitiesCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+  const identities = await retry(async () => {
+    const identities: IdentityMap = new Map();
+    (await firestore.collection(`customers/${customerId}/identities`).get()).forEach(identity => {
+      const data = identitySchema.parse(identity.data());
+      identities.set(identity.id, data);
+    });
+    return identities;
+  }, retryProps('Retrying getIdentities...')).catch(e => {
+    logger.error(e, 'getIdentities failed');
+    throw e;
+  });
+  identitiesCache.set(cacheKey, identities);
+  return identities;
+};
+
+export const insertIdentity = async (customerId: number, identity: Omit<Identity, 'id'>) => {
+  await retry(async () => {
+    await firestore
+      .collection(`customers/${customerId}/identities`)
+      .add({ createdDate: Date.now(), ...identity });
+  }, retryProps('Retrying insertIdentity...')).catch(e => {
+    logger.error(e, 'insertIdentity failed');
+    throw e;
+  });
 };
 
 export const saveEvent = async (event: Event) => {

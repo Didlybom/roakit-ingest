@@ -13,7 +13,7 @@ module.exports = {
     project: ['tsconfig.json', 'tsconfig.dev.json'],
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', '@stylistic'],
+  plugins: ['@typescript-eslint', '@stylistic', 'jest'],
   ignorePatterns: ['/lib/**/*', '/src/generated/proto/**/*'],
   rules: {
     'no-console': [2],

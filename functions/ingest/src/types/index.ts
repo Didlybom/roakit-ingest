@@ -39,6 +39,37 @@ export interface Account {
   lastUpdatedTimestamp?: number;
 }
 
+export interface Identity {
+  id: string;
+  email?: string;
+  displayName?: string;
+  timeZone?: string;
+  accounts: { feedId: number; type: string; id?: Account['id']; name?: string; url?: string }[];
+}
+export type IdentityMap = Map<string, Omit<Identity, 'id'>>;
+
+/**
+ * FIXME if we want to handle identities automatically, we need to be able for example to find that
+ * an existing Jira account (no username, only full name) belongs to the same identity as an incoming GitHub account (no full name).
+ *
+ * Unused.
+ */
+export const findIdentity = (
+  identities: IdentityMap,
+  feedId: number,
+  accountId: string,
+  accountName?: string
+) => {
+  return [...identities].find(
+    ([, identity]) =>
+      !!identity.accounts.find(
+        account =>
+          account.feedId === feedId &&
+          (account.id === accountId || (accountName && account.name === accountName))
+      )
+  );
+};
+
 export interface Project {
   id: string;
   key: string;

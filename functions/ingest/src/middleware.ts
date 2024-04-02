@@ -12,7 +12,7 @@ import {
   saveTicket,
   updateUnbannedEventType,
 } from './firestore';
-import type { Event, EventType } from './types';
+import { type Event, type EventType } from './types';
 import { decodeClientId, verifyHmacSignature } from './utils/cryptoUtils';
 
 const logger = pino({ name: 'middleware' });
