@@ -1,8 +1,9 @@
 import { Account, Action, Artifact } from '../types';
 import { GitHubEventSchema } from '../types/githubSchema';
 
+const orgEvents = ['repository', 'membership', 'member'];
 export const inferArtifact = (eventName: string): Artifact => {
-  return eventName === 'repository' || eventName === 'membership' ? 'codeOrg' : 'code';
+  return orgEvents.includes(eventName) ? 'codeOrg' : 'code';
 };
 
 const updatedEvents = [
@@ -13,9 +14,10 @@ const updatedEvents = [
   'pull_request_review_thread',
   'label',
   'membership',
+  'member',
   'release',
 ];
-const createdEvents = ['push', 'pull_request_review_comment', 'create'];
+const createdEvents = ['push', 'create'];
 const deletedEvents = ['delete'];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const inferAction = (eventName: string, codeAction?: string): Action => {
