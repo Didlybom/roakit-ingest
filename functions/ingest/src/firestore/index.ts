@@ -158,8 +158,16 @@ export const saveEvent = async (event: Event) => {
     )
     .set(event)
     .catch(e => {
-      logger.error(e, 'saveEvent failed');
-      throw e;
+      if (
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        e?.code === 3 /* INVALID ARGUMENT (e.g. exceeds the maximum allowed size) */
+      ) {
+        // event is not critical (it's a dupe of the gcs event in Firestore for debugging purposes), don't log as error and don't throw
+        logger.warn(e, 'saveAccount failed');
+      } else {
+        logger.error(e, 'saveAccount failed');
+        throw e;
+      }
     });
 };
 
