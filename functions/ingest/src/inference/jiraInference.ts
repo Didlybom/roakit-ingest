@@ -19,7 +19,7 @@ const jiraActionSuffixes = [
   'archived',
 ] as Action[];
 export const inferAction = (eventName: string): Action => {
-  if (eventName.startsWith('comment')) {
+  if (eventName.startsWith('comment') || eventName.startsWith('attachment')) {
     return 'updated';
   }
   for (const action of jiraActionSuffixes) {
