@@ -36,6 +36,22 @@ export const verifyHmacSignature = (headerName: string, secret: Uint8Array, ctx:
   ctx.throw(400 /* Bad request */, `Invalid ${headerName}`);
 };
 
+export const createClientId = (secretKey: string, customerId: number, feedId: number) => {
+  const clientId = new ClientId();
+  clientId.customerId = customerId;
+  clientId.feedId = feedId;
+
+  const buffer = Buffer.from(clientId.serializeBinary());
+
+  clientId.checksum = crypto
+    .createHmac(ALGORITHM, Buffer.from(secretKey, 'base64'))
+    .update(buffer)
+    .digest(HEX_ENCODING)
+    .substring(0, CHECKSUM_LENGTH);
+
+  return Buffer.from(clientId.serializeBinary()).toString('base64url');
+};
+
 export const decodeClientId = (secretKey: Buffer, encodedClientId: string) => {
   const payload = ClientId.deserializeBinary(Buffer.from(encodedClientId, 'base64url'));
 

@@ -15,7 +15,7 @@ export const jsonToEvent: Record<EventType, JsonToEvent> = {
 export type EventToActivity = (
   event: Event,
   eventStorageId: string
-) => { activity?: Activity; account?: Account; ticket?: Ticket };
+) => { activity: Activity; account?: Account; ticket?: Ticket };
 
 export const eventToActivity: Record<EventType, EventToActivity> = {
   [EventType.github]: githubEventToActivity,

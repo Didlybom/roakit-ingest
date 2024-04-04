@@ -16,7 +16,7 @@ const bucket = gcs.bucket();
 
 const retryProps = {
   // see https://github.com/tim-kos/node-retry#api
-  retries: 2,
+  retries: 1,
   factor: 2,
   minTimeout: 500,
 };
@@ -49,5 +49,15 @@ export const gcsSaveEvent = async (event: Event): Promise<{ eventStorageId: stri
       ...retryProps,
       onRetry: e => logger.warn(`Retrying gcsSaveEvent... ${e.message}`),
     }
+  );
+};
+
+export const gcsEventInstances = async (prefix: string) => {
+  const [files] = await bucket.getFiles({ prefix: prefix + '/i' });
+  return Promise.all(
+    files.map(async file => {
+      const [content] = await bucket.file(file.name).download();
+      return { storageId: file.name, event: JSON.parse(Buffer.from(content).toString()) as Event };
+    })
   );
 };

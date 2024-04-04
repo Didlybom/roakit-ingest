@@ -3,6 +3,11 @@ export enum EventType {
   jira = 'jira',
 }
 
+export const FEEDS = [
+  { id: 1, type: EventType.github },
+  { id: 2, type: EventType.jira },
+];
+
 export interface Event {
   contentLength: number;
   instanceId: string;

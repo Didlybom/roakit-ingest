@@ -2,7 +2,7 @@ import Router from '@koa/router';
 import cfg from 'config';
 import Koa from 'koa';
 import packageJson from '../package.json';
-import { eventMiddleware, signedEventMiddleware } from './middleware';
+import { eventMiddleware, gcsEventMiddleware, signedEventMiddleware } from './middleware';
 import { EventType } from './types';
 
 export const createKoaService = () => {
@@ -12,6 +12,7 @@ export const createKoaService = () => {
     EventType.github
   );
   const jiraEventHandler = eventMiddleware(EventType.jira);
+  const gcsEventHandler = gcsEventMiddleware();
 
   const router = new Router();
 
@@ -22,11 +23,13 @@ export const createKoaService = () => {
 
   router.post('/github/:clientId', gitHubEventHandler);
   router.post('/jira/:clientId', jiraEventHandler);
+  router.post('/gcs/:clientId', gcsEventHandler);
 
   const server = new Koa();
   // CLIENT_ID_KEY is undefined during firebase deploy check, hence the `?? ''`
   server.context.secret = Buffer.from(process.env.CLIENT_ID_KEY ?? '', 'base64');
   server.use(router.routes());
+  // GCP functions parse the request body automatically
 
   return server;
 };

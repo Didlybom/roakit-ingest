@@ -7,7 +7,8 @@
   "scripts": {
     "build": "npm run build.proto && tsc",
     "build.proto": "mkdir -p src/generated && protoc --ts_opt=esModuleInterop=true --ts_opt=json_names --ts_out=src/generated proto/*.proto",
-    "local": "npm run build && firebase use default && firebase emulators:start --inspect-functions --only functions",
+    "watch": "tsc --watch",
+    "local": "npm run build && firebase use default && firebase emulators:start --inspect-functions --only functions:ingest",
     "deploy": "npm run build && firebase use default; firebase deploy --only functions:ingest",
     "deploy.prod": "npm run build && firebase use prod; firebase deploy --only functions:ingest",
     "lint": "eslint --ext .ts .",

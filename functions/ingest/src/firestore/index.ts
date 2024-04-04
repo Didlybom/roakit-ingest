@@ -39,12 +39,15 @@ const identitiesCache = new NodeCache({ stdTTL: 30 /* seconds */, useClones: fal
 
 export const getBannedEvents = async (
   customerId: number,
-  feedId: number
+  feedId: number,
+  options: { noCache: boolean } = { noCache: false }
 ): Promise<Record<string, boolean>> => {
   const cacheKey = makeCacheKey(customerId, feedId);
-  const cached: Record<string, boolean> | undefined = bannedEventsCache.get(cacheKey);
-  if (cached) {
-    return cached;
+  if (!options?.noCache) {
+    const cached: Record<string, boolean> | undefined = bannedEventsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
   }
   const bannedEvents = await retry(async () => {
     const doc = await firestore.doc(`customers/${customerId}/feeds/${feedId}`).get();
@@ -172,13 +175,14 @@ export const saveEvent = async (event: Event) => {
 };
 
 export const saveActivity = async (activity: Activity) => {
-  await firestore
+  const doc = await firestore
     .collection(`customers/${activity.customerId}/activities/`)
     .add(activity)
     .catch(e => {
       logger.error(e, 'saveActivity failed');
       throw e;
     });
+  return doc.id;
 };
 
 export const saveAccount = async (account: Account, customerId: number, feedId: number) => {
