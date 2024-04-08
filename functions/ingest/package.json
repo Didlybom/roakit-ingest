@@ -47,7 +47,7 @@
     "prettier": "3.2.5",
     "protoc-gen-ts": "^0.8.7",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.4"
   },
   "engines": {
     "node": "20"

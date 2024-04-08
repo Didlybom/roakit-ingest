@@ -7,12 +7,11 @@ import {
   getBannedEvents,
   getIdentities,
   insertAccountToReview,
-  insertUnbannedEventType,
   saveAccount,
   saveActivity,
   saveEvent,
   saveTicket,
-  updateUnbannedEventType,
+  setUnbannedEventType,
 } from './firestore';
 import {
   Account,
@@ -47,19 +46,30 @@ const handleBannedEvents = async (
   eventType: string,
   event: Event
 ) => {
+  let banned = false;
+  let foundSetting = false;
+
+  // simple event, e.g. pull_request: false
   if (event.name in bannedEvents) {
-    if (bannedEvents[event.name]) {
-      return { banned: true };
-    }
-    return { banned: false };
+    foundSetting = true;
+    banned = bannedEvents[event.name];
   }
 
-  if (!Object.keys(bannedEvents).length) {
-    await insertUnbannedEventType(event.customerId, event.feedId, eventType, event.name);
-  } else {
-    await updateUnbannedEventType(event.customerId, event.feedId, event.name);
+  // event with action, e.g. pull_request[action=synchronize]: true
+  if (
+    !banned &&
+    event.properties?.action &&
+    event.name + `[action=${event.properties.action as string}]` in bannedEvents
+  ) {
+    banned = true;
   }
-  return { banned: false };
+
+  // add event to settings (as unbanned) if not there yet
+  if (!foundSetting) {
+    await setUnbannedEventType(event.customerId, event.feedId, eventType, event.name);
+  }
+
+  return { banned };
 };
 
 const handleBannedAccounts = (bannedAccounts: Record<string, boolean>, event: Event) => {
@@ -111,7 +121,6 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
     if (!banned) {
       banned = handleBannedAccounts(bannedAccounts, event).banned;
     }
-
     const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
     if (!banned) {
       const { activity, account, ticket } = eventToActivity[eventType](event, eventStorageId);

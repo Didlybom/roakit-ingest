@@ -60,7 +60,7 @@ export const getBannedEvents = async (
   return bannedEvents;
 };
 
-export const insertUnbannedEventType = async (
+export const setUnbannedEventType = async (
   customerId: number,
   feedId: number,
   type: string,
@@ -69,27 +69,11 @@ export const insertUnbannedEventType = async (
   deleteBannedEventsCacheKey(customerId, feedId);
   await firestore
     .doc(`customers/${customerId}/feeds/${feedId}`)
-    .set({ ['bannedEvents']: { [eventName]: false }, id: feedId, type })
+    .set({ ['bannedEvents']: { [eventName]: false }, id: feedId, type }, { merge: true })
     .catch(e => {
-      logger.error(e, 'insertUnbannedEventType failed');
+      logger.error(e, 'setUnbannedEventType failed');
       throw e;
     });
-};
-
-export const updateUnbannedEventType = async (
-  customerId: number,
-  feedId: number,
-  eventName: string
-) => {
-  deleteBannedEventsCacheKey(customerId, feedId);
-  await retry(async () => {
-    await firestore
-      .doc(`customers/${customerId}/feeds/${feedId}`)
-      .update(`bannedEvents.${eventName}`, false);
-  }, retryProps('Retrying updateUnbannedEventType...')).catch(e => {
-    logger.error(e, 'updateUnbannedEventType failed');
-    throw e;
-  });
 };
 
 export const getBannedAccounts = async (
@@ -163,12 +147,15 @@ export const saveEvent = async (event: Event) => {
     .catch(e => {
       if (
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        e?.code === 3 /* INVALID ARGUMENT (e.g. exceeds the maximum allowed size) */
+        e?.code === 3 ||
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        ((e?.message as string) ?? '').indexOf('INVALID_ARGUMENT') !==
+          -1 /* (e.g. exceeds the maximum allowed size) */
       ) {
         // event is not critical (it's a dupe of the gcs event in Firestore for debugging purposes), don't log as error and don't throw
-        logger.warn(e, 'saveAccount failed');
+        logger.warn(e, 'saveEvent failed');
       } else {
-        logger.error(e, 'saveAccount failed');
+        logger.error(e, 'saveEvent failed');
         throw e;
       }
     });
