@@ -3,7 +3,12 @@ import { JiraEventSchema } from '../types/jiraSchema';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const inferArtifact = (eventName: string): Artifact => {
-  if (eventName.startsWith('board')) {
+  if (
+    eventName.startsWith('board') ||
+    eventName.startsWith('project') ||
+    eventName.startsWith('sprint') ||
+    eventName.startsWith('user')
+  ) {
     return 'taskOrg';
   }
   return 'task'; // obviously need improvement

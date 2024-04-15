@@ -12,6 +12,7 @@
     "deploy": "npm run build && firebase use default; firebase deploy --only functions:ingest",
     "deploy.prod": "npm run build && firebase use prod; firebase deploy --only functions:ingest",
     "lint": "eslint --ext .ts .",
+    "tsc": "tsc",
     "test": "jest",
     "logs": "firebase functions:log"
   },

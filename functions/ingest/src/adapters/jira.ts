@@ -11,6 +11,7 @@ import {
   toComment,
   toIssue,
   toPriority,
+  toProject,
   toSprint,
   toTicket,
 } from '../types/jiraSchemaAdapter';
@@ -65,6 +66,7 @@ export const jiraEventToActivity: EventToActivity = (event: Event, eventStorageI
       initiative: '', // FIXME map initiative
       metadata: {
         ...(props.changelog && { changeLog: toChangelog(props.changelog) }),
+        ...(props.project && { project: toProject(props.project) }),
         ...(props.issue && { issue: toIssue(props.issue) }),
         ...(props.comment && { comment: toComment(props.comment) }),
         ...(props.attachment && { attachment: toAttachment(props.attachment) }),

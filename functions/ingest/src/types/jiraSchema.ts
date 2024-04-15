@@ -10,6 +10,13 @@ const zuser = z.object({
   timeZone: z.string().optional(),
 });
 
+const zproject = z.object({
+  id: z.string(),
+  key: z.string(),
+  name: z.string(),
+  self: z.string().url(),
+});
+
 const zissue = z.object({
   id: z.string(),
   key: z.string(),
@@ -26,12 +33,7 @@ const zissue = z.object({
       id: z.string(),
       name: z.string(),
     }),
-    project: z.object({
-      id: z.string(),
-      key: z.string(),
-      name: z.string(),
-      self: z.string().url(),
-    }),
+    project: zproject,
     status: z.object({
       id: z.string(),
       name: z.string(),
@@ -117,6 +119,7 @@ export type ChangeLogSchema = z.infer<typeof zchangeLog>;
 
 export const jiraEventSchema = z.object({
   user: zuser.optional(),
+  project: zproject.optional(),
   issue: zissue.optional(),
   comment: zcomment.optional(),
   attachment: zattachment.optional(),

@@ -211,6 +211,7 @@ export interface Activity {
   metadata: {
     // project software (jira)
     changeLog?: ChangeLog[];
+    project?: Project;
     issue?: Issue;
     comment?: Comment;
     attachment?: Attachment;
