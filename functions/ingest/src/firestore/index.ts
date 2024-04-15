@@ -153,7 +153,7 @@ export const saveEvent = async (event: Event) => {
           -1 /* (e.g. exceeds the maximum allowed size) */
       ) {
         // event is not critical (it's a dupe of the gcs event in Firestore for debugging purposes), don't log as error and don't throw
-        logger.warn(e, 'saveEvent failed');
+        logger.warn(e, 'saveEvent failed with INVALID_ARGUMENT');
       } else {
         logger.error(e, 'saveEvent failed');
         throw e;

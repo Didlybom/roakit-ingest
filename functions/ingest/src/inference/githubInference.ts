@@ -1,11 +1,21 @@
 import { Account, Action, Artifact } from '../types';
 import { GitHubEventSchema } from '../types/githubSchema';
 
-const orgEvents = ['repository', 'membership', 'member'];
+// see https://docs.github.com/en/webhooks/webhook-events-and-payload
+
+const orgEvents = [
+  'repository',
+  'repository_ruleset',
+  'branch_protection_rule',
+  'membership',
+  'member',
+  'organization',
+];
 export const inferArtifact = (eventName: string): Artifact => {
   return orgEvents.includes(eventName) ? 'codeOrg' : 'code';
 };
 
+const createdEvents = ['push', 'create'];
 const updatedEvents = [
   'issue_comment',
   'pull_request',
@@ -17,9 +27,11 @@ const updatedEvents = [
   'member',
   'release',
 ];
-const createdEvents = ['push', 'create'];
-const deletedEvents = ['delete'];
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const deletedEvents = ['deleted', 'delete'];
+const createdActions = ['added', 'created', 'member_added', 'member_invited'];
+const updatedActions = ['edited', 'renamed'];
+const deletedActions = ['member_removed'];
+
 export const inferAction = (eventName: string, codeAction?: string): Action => {
   if (updatedEvents.includes(eventName)) {
     return 'updated';
@@ -29,6 +41,17 @@ export const inferAction = (eventName: string, codeAction?: string): Action => {
   }
   if (deletedEvents.includes(eventName)) {
     return 'deleted';
+  }
+  if (codeAction) {
+    if (createdActions.includes(codeAction)) {
+      return 'created';
+    }
+    if (updatedActions.includes(codeAction)) {
+      return 'updated';
+    }
+    if (deletedActions.includes(codeAction)) {
+      return 'deleted';
+    }
   }
   return 'unknown';
 };
