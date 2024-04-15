@@ -1,0 +1,3 @@
+{
+  "jest.virtualFolders": [{ "name": "functions/ingest", "rootPath": "functions/ingest" }]
+}
