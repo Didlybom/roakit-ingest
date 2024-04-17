@@ -69,6 +69,24 @@ const handleBannedEvents = async (
     await setUnbannedEventType(event.customerId, event.feedId, eventType, event.name);
   }
 
+  // "ban" pushes without commits (tags,...)
+  if (
+    eventType === 'github' &&
+    event.name === 'push' &&
+    !(event.properties?.commits as [])?.length
+  ) {
+    banned = true;
+  }
+
+  // "ban" tags and branches
+  if (
+    eventType === 'github' &&
+    event.name === 'create' &&
+    (event.properties?.ref_type === 'tag' || event.properties?.ref_type === 'branch')
+  ) {
+    banned = true;
+  }
+
   return { banned };
 };
 
