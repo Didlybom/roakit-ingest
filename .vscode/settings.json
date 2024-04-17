@@ -1,3 +1,4 @@
 {
+  "eslint.workingDirectories": ["functions/ingest"],
   "jest.virtualFolders": [{ "name": "functions/ingest", "rootPath": "functions/ingest" }]
 }
