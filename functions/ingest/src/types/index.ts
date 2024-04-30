@@ -49,7 +49,7 @@ export interface Identity {
   email?: string;
   displayName?: string;
   timeZone?: string;
-  accounts: { feedId: number; type: string; id?: Account['id']; name?: string; url?: string }[];
+  accounts?: { feedId: number; type: string; id?: Account['id']; name?: string; url?: string }[];
 }
 export type IdentityMap = Map<string, Omit<Identity, 'id'>>;
 
@@ -67,7 +67,7 @@ export const findIdentity = (
 ) => {
   return [...identities].find(
     ([, identity]) =>
-      !!identity.accounts.find(
+      !!identity.accounts?.find(
         account =>
           account.feedId === feedId &&
           (account.id === accountId || (accountName && account.name === accountName))

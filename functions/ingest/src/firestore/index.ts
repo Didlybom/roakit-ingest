@@ -107,17 +107,17 @@ export const getIdentities = async (
       return cached;
     }
   }
-  const identities = await retry(async () => {
-    const identities: IdentityMap = new Map();
-    (await firestore.collection(`customers/${customerId}/identities`).get()).forEach(identity => {
-      const data = identitySchema.parse(identity.data());
-      identities.set(identity.id, data);
-    });
-    return identities;
-  }, retryProps('Retrying getIdentities...')).catch(e => {
+  const identityDocs = await retry(
+    async () => await firestore.collection(`customers/${customerId}/identities`).get(),
+    retryProps('Retrying getIdentities...')
+  ).catch(e => {
     logger.error(e, 'getIdentities failed');
     throw e;
   });
+  const identities: IdentityMap = new Map();
+  identityDocs.forEach(identity =>
+    identities.set(identity.id, identitySchema.parse(identity.data()))
+  );
   identitiesCache.set(cacheKey, identities);
   return identities;
 };

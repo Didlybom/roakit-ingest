@@ -12,6 +12,7 @@ export const identitySchema = z.object({
       name: z.string().optional(),
       url: z.string().optional(),
     })
-    .array(),
+    .array()
+    .optional(),
   lastLastUpdatedTimestamp: z.number().optional(),
 });
