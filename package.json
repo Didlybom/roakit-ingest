@@ -4,8 +4,8 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^1.7.0",
-    "@typescript-eslint/eslint-plugin": "^7.5.0",
-    "@typescript-eslint/parser": "^7.5.0"
+    "@stylistic/eslint-plugin": "^1.8.0",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0"
   }
 }
