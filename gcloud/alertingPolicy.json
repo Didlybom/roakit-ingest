@@ -1,0 +1,36 @@
+{
+  "name": "projects/roakit-production/alertPolicies/4994904645649640630",
+  "displayName": "Ingestion Error",
+  "documentation": {
+    "content": "\"eventMiddleware failed\" OR \"gcsEventMiddleware failed\"",
+    "mimeType": "text/markdown"
+  },
+  "userLabels": {},
+  "conditions": [
+    {
+      "name": "projects/roakit-production/alertPolicies/4994904645649640630/conditions/4994904645649639531",
+      "displayName": "Log match condition",
+      "conditionMatchedLog": {
+        "filter": "(resource.type = \"cloud_function\"\nresource.labels.function_name = \"ingest\"\nresource.labels.region = \"us-west1\")\n OR \n(resource.type = \"cloud_run_revision\"\nresource.labels.service_name = \"ingest\"\nresource.labels.location = \"us-west1\")\nseverity>=DEFAULT\njsonPayload.msg=(\"eventMiddleware failed\" OR \"gcsEventMiddleware failed\")\n"
+      }
+    }
+  ],
+  "alertStrategy": {
+    "notificationRateLimit": {
+      "period": "600s"
+    },
+    "autoClose": "604800s"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "notificationChannels": ["projects/roakit-production/notificationChannels/4760744341064924907"],
+  "creationRecord": {
+    "mutateTime": "2024-05-01T08:54:59.497620896Z",
+    "mutatedBy": "olivier@roakit.com"
+  },
+  "mutationRecord": {
+    "mutateTime": "2024-05-01T08:55:54.549432523Z",
+    "mutatedBy": "olivier@roakit.com"
+  },
+  "severity": "ERROR"
+}
