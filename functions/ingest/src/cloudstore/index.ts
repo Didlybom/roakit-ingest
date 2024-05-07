@@ -57,7 +57,10 @@ export const gcsEventInstances = async (prefix: string) => {
   return Promise.all(
     files.map(async file => {
       const [content] = await bucket.file(file.name).download();
-      return { storageId: file.name, event: JSON.parse(Buffer.from(content).toString()) as Event };
+      return {
+        storageId: bucket.id + '/' + file.name,
+        event: JSON.parse(Buffer.from(content).toString()) as Event,
+      };
     })
   );
 };

@@ -1,6 +1,6 @@
 import retry from 'async-retry';
 import { getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, type DocumentReference } from 'firebase-admin/firestore';
 import NodeCache from 'node-cache';
 import pino from 'pino';
 import type { Account, Activity, Event, IdentityMap, Ticket } from '../types';
@@ -169,6 +169,38 @@ export const saveActivity = async (activity: Activity) => {
       logger.error(e, 'saveActivity failed');
       throw e;
     });
+  return doc.id;
+};
+
+export const overwriteActivityByGcsId = async (activity: Activity) => {
+  const coll = firestore.collection(`customers/${activity.customerId}/activities/`);
+  const docs = await coll.where('objectId', '==', activity.objectId).get();
+  let doc: DocumentReference;
+  if (docs.empty) {
+    try {
+      doc = await coll.add(activity);
+    } catch (e) {
+      logger.error(e, 'overwriteActivityByGcsId add failed');
+      throw e;
+    }
+  } else {
+    doc = docs.docs[0].ref;
+    if (docs.size > 1) {
+      // should not have happened, but clean up all "dupes"
+      const batch = firestore.batch();
+      for (let i = 1; i < docs.size; i++) {
+        batch.delete(docs.docs[i].ref);
+      }
+      batch.commit().catch(e => {
+        logger.error(e, 'overwriteActivityByGcsId delete failed');
+        throw e;
+      });
+    }
+    doc.set(activity).catch(e => {
+      logger.error(e, 'overwriteActivityByGcsId set failed');
+      throw e;
+    });
+  }
   return doc.id;
 };
 

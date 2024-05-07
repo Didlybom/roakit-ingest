@@ -7,6 +7,7 @@ import {
   getBannedEvents,
   getIdentities,
   insertAccountToReview,
+  overwriteActivityByGcsId,
   saveAccount,
   saveActivity,
   saveEvent,
@@ -201,12 +202,10 @@ export const gcsEventMiddleware = () => async (ctx: Context, next: Next) => {
     }
 
     const bannedEvents = await Promise.all(
-      FEEDS.map(async feed => {
-        return {
-          feedId: feed.id,
-          events: await getBannedEvents(customerId, feed.id, { noCache: true }),
-        };
-      })
+      FEEDS.map(async feed => ({
+        feedId: feed.id,
+        events: await getBannedEvents(customerId, feed.id, { noCache: true }),
+      }))
     );
 
     const gcsEventDirs: string[] = [];
@@ -223,8 +222,7 @@ export const gcsEventMiddleware = () => async (ctx: Context, next: Next) => {
         });
       });
     });
-
-    const createdActivityIds: string[] = [];
+    const writtenActivityIds: string[] = [];
     await Promise.all(
       gcsEventDirs.map(async prefix => {
         const instances: { storageId: string; event: Event }[] = await gcsEventInstances(prefix);
@@ -234,13 +232,13 @@ export const gcsEventMiddleware = () => async (ctx: Context, next: Next) => {
               instance.event,
               instance.storageId
             );
-            createdActivityIds.push(await saveActivity(activity));
+            writtenActivityIds.push(await overwriteActivityByGcsId(activity));
           })
         );
       })
     );
 
-    ctx.body = { createdActivityIds };
+    ctx.body = { writtenActivityIds };
     ctx.status = 200 /* OK */;
 
     await next();
