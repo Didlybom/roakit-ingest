@@ -3,7 +3,7 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, type DocumentReference } from 'firebase-admin/firestore';
 import NodeCache from 'node-cache';
 import pino from 'pino';
-import type { Account, Activity, Event, IdentityMap, Ticket } from '../types';
+import type { Account, Activity, IdentityMap, Ticket } from '../types';
 import { identitySchema } from '../types/roakitSchema';
 import { ONE_DAY } from '../utils/dateUtils';
 
@@ -136,29 +136,6 @@ export const insertAccountToReview = async (
       throw e;
     });
   }
-};
-
-export const saveEvent = async (event: Event) => {
-  await firestore
-    .doc(
-      `customers/${event.customerId}/feeds/${event.feedId}/events/${event.name}/instances/${event.instanceId}`
-    )
-    .set(event)
-    .catch(e => {
-      if (
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        e?.code === 3 ||
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        ((e?.message as string) ?? '').indexOf('INVALID_ARGUMENT') !==
-          -1 /* (e.g. exceeds the maximum allowed size) */
-      ) {
-        // event is not critical (it's a dupe of the gcs event in Firestore for debugging purposes), don't log as error and don't throw
-        logger.warn(e, 'saveEvent failed with INVALID_ARGUMENT');
-      } else {
-        logger.error(e, 'saveEvent failed');
-        throw e;
-      }
-    });
 };
 
 export const saveActivity = async (activity: Activity) => {

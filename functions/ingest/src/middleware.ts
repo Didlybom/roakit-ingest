@@ -10,7 +10,6 @@ import {
   overwriteActivityByGcsId,
   saveAccount,
   saveActivity,
-  saveEvent,
   saveTicket,
   setUnbannedEventType,
 } from './firestore';
@@ -143,7 +142,6 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
     const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
     if (!banned) {
       const { activity, account, ticket } = eventToActivity[eventType](event, eventStorageId);
-      await saveEvent(event);
       if (account) {
         await handleIdentities(event.customerId, event.feedId, identities, account);
       }
@@ -222,6 +220,7 @@ export const gcsEventMiddleware = () => async (ctx: Context, next: Next) => {
         });
       });
     });
+    // FIXME NOT TESTED with numerous buckets, Promise.all might make the server explode
     const writtenActivityIds: string[] = [];
     await Promise.all(
       gcsEventDirs.map(async prefix => {
