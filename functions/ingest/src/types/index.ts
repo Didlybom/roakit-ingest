@@ -1,11 +1,13 @@
 export enum EventType {
   github = 'github',
   jira = 'jira',
+  confluence = 'confluence',
 }
 
 export const FEEDS = [
   { id: 1, type: EventType.github },
   { id: 2, type: EventType.jira },
+  { id: 3, type: EventType.confluence },
 ];
 
 export interface Event {
@@ -38,9 +40,9 @@ export type Action =
 
 export interface Account {
   id: string;
-  accountName: string;
-  accountUri: string;
-  timeZone: string;
+  accountName?: string;
+  accountUri?: string;
+  timeZone?: string;
   lastUpdatedTimestamp?: number;
 }
 
@@ -120,11 +122,17 @@ export interface Issue {
 export interface Comment {
   id: string;
   author: string;
-  body: string;
+  body?: string;
   uri?: string;
   created?: number;
   updated?: number;
   updateAuthor?: string;
+  parent?: {
+    type: string;
+    id: string;
+    title?: string;
+    uri?: string;
+  };
 }
 
 export interface Attachment {
@@ -165,6 +173,35 @@ export interface ChangeLog {
   oldValue?: string;
   newId?: string;
   newValue?: string;
+}
+
+export interface Space {
+  id: string;
+  author: string;
+  key: string;
+  title: string;
+  isPersonalSpace: boolean;
+  uri?: string;
+  created?: number;
+  updated?: number;
+  updateAuthor?: string;
+}
+
+export interface Page {
+  id: string;
+  author: string;
+  title: string;
+  spaceKey?: string;
+  version?: number;
+  uri?: string;
+  created?: number;
+  updated?: number;
+  updateAuthor?: string;
+}
+
+export interface ConfluenceComment {
+  id: string;
+  author: string;
 }
 
 export interface PullRequest {
@@ -209,7 +246,7 @@ export interface Activity {
   initiative: string; // not undefined, so Firestore can index the field (as '')
   effort?: number;
   metadata: {
-    // project software (jira)
+    // project software (Jira)
     changeLog?: ChangeLog[];
     project?: Project;
     issue?: Issue;
@@ -219,7 +256,10 @@ export interface Activity {
     worklog?: Worklog;
     parent?: Issue;
 
-    // code software (github)
+    // project documentation (Confluence)
+    page?: Page;
+
+    // code software (Github)
     codeAction?: string;
     repository?: string;
     pullRequest?: PullRequest;

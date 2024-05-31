@@ -36,7 +36,7 @@ export const inferAction = (eventName: string): Action => {
   return 'unknown';
 };
 
-export const inferAccount = (props: JiraEventSchema) => {
+export const inferAccount = (props: JiraEventSchema): Account | undefined => {
   const account = props.comment?.author ?? props.attachment?.author ?? props.user;
   // issue.fields.creator/assignee could be interesting too, depending on action
   if (!account) {

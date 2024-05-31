@@ -87,6 +87,15 @@ const handleBannedEvents = async (
     banned = true;
   }
 
+  // "ban" confluence noise
+  if (
+    eventType === 'confluence' &&
+    event.properties?.type ===
+      'com.atlassian.confluence.plugins.confluence-content-property-storage:content-property'
+  ) {
+    banned = true;
+  }
+
   return { banned };
 };
 
@@ -140,6 +149,7 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
       banned = handleBannedAccounts(bannedAccounts, event).banned;
     }
     const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
+
     if (!banned) {
       const { activity, account, ticket } = eventToActivity[eventType](event, eventStorageId);
       if (account) {

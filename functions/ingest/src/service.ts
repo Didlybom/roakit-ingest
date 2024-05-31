@@ -12,6 +12,7 @@ export const createKoaService = () => {
     EventType.github
   );
   const jiraEventHandler = eventMiddleware(EventType.jira);
+  const confluenceEventHandler = eventMiddleware(EventType.confluence);
   const gcsEventHandler = gcsEventMiddleware();
 
   const router = new Router();
@@ -23,6 +24,7 @@ export const createKoaService = () => {
 
   router.post('/github/:clientId', gitHubEventHandler);
   router.post('/jira/:clientId', jiraEventHandler);
+  router.post('/confluence/:clientId', confluenceEventHandler);
   router.post('/gcs/:clientId', gcsEventHandler);
 
   const server = new Koa();
