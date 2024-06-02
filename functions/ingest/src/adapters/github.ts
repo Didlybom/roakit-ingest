@@ -4,8 +4,8 @@ import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { inferAccount, inferAction, inferArtifact } from '../inference/githubInference';
 import { getHeader } from '../middleware';
-import type { Activity, Event } from '../types';
-import { githubEventSchema } from '../types/githubSchema';
+import { EventType, type Activity, type Event } from '../types';
+import { githubEventSchema, type GitHubEventSchema } from '../types/githubSchema';
 import {
   toCodeAction,
   toCommits,
@@ -19,8 +19,7 @@ const logger = pino({ name: 'adapters:github' });
 
 export const gitHubJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, body: unknown) => {
   const now = Date.now();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-  const createdAt = (body as any).hook?.created_at as string;
+  const createdAt = (body as GitHubEventSchema).hook?.created_at;
   const eventTimestamp = !createdAt ? now : Date.parse(createdAt);
 
   const targetType: string = ctx.request.get('X-GitHub-Hook-Installation-Target-Type');
@@ -32,16 +31,14 @@ export const gitHubJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId,
     instanceId: ctx.request.get('X-GitHub-Delivery') || `${eventTimestamp}`,
     customerId: clientId.customerId,
     feedId: clientId.feedId,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    senderAccount: (body as any).sender?.login as string,
+    senderAccount: (body as GitHubEventSchema).sender?.login,
     createTimestamp: now,
     eventTimestamp,
     name: getHeader(ctx, 'X-GitHub-Event'),
     hookId: getHeader(ctx, 'X-GitHub-Hook-ID'),
     ...(targetId && { targetId }),
     ...(targetType && { targetType }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    properties: { ...(body as any) } as Event['properties'],
+    properties: body as Event['properties'],
   };
 
   return event;
@@ -57,6 +54,7 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
 
     const activity: Activity = {
       objectId: eventStorageId,
+      eventType: EventType.github,
       event: event.name,
       createdTimestamp: event.createTimestamp,
       customerId: event.customerId,

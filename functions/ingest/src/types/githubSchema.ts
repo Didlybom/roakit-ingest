@@ -33,6 +33,7 @@ const zrelease = z.object({ body: z.string() });
 export type ReleaseSchema = z.infer<typeof zrelease>;
 
 export const githubEventSchema = z.object({
+  hook: z.object({ created_at: z.string().optional() }).optional(),
   sender: zuser.optional(),
   action: z.string().optional(),
   repository: zrepository.optional(),

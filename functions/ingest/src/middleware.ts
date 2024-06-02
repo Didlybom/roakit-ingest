@@ -134,6 +134,7 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
   if (!body) {
     ctx.throw(400 /* Bad request */, 'Empty body');
   }
+  // logger.debug(JSON.stringify(body));
 
   const clientId = deserializeClientId(ctx);
   const event = jsonToEvent[eventType](ctx, clientId, body);

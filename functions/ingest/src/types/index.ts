@@ -32,6 +32,8 @@ export type Action =
   | 'created'
   | 'updated'
   | 'deleted'
+  | 'labeled'
+  | 'commented'
   | 'started'
   | 'closed'
   | 'released'
@@ -199,9 +201,21 @@ export interface Page {
   updateAuthor?: string;
 }
 
-export interface ConfluenceComment {
+export interface Label {
   id: string;
-  author: string;
+  author?: string;
+  name?: string;
+  uri?: string;
+  spaceKey?: string;
+  created?: number;
+  updated?: number;
+  updateAuthor?: string;
+  parent?: {
+    type: string;
+    id: string;
+    title?: string;
+    uri?: string;
+  };
 }
 
 export interface PullRequest {
@@ -232,10 +246,11 @@ export interface Release {
   body: string;
 }
 
-export type Artifact = 'task' | 'taskOrg' | 'code' | 'codeOrg';
+export type Artifact = 'task' | 'taskOrg' | 'code' | 'codeOrg' | 'doc' | 'docOrg';
 
 export interface Activity {
   objectId: string;
+  eventType: EventType;
   event: string;
   createdTimestamp: number;
   customerId: number;

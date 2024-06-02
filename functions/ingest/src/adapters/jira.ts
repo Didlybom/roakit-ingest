@@ -3,8 +3,8 @@ import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { inferAccount, inferAction, inferArtifact } from '../inference/jiraInference';
-import type { Activity, Event } from '../types';
-import { jiraEventSchema } from '../types/jiraSchema';
+import { EventType, type Activity, type Event } from '../types';
+import { jiraEventSchema, type JiraEventSchema } from '../types/jiraSchema';
 import {
   toAttachment,
   toChangelog,
@@ -20,14 +20,13 @@ const logger = pino({ name: 'adapters:jira' });
 
 export const jiraJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, body: unknown) => {
   const now = Date.now();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-  const { webhookEvent: name, id, timestamp, ...properties } = body as any;
+  const { webhookEvent: name, timestamp, ...properties } = body as JiraEventSchema;
 
   const headerWebhookFlow = ctx.get('X-Atlassian-Webhook-Flow');
 
-  const eventTimestamp = (timestamp as number) ?? now;
+  const eventTimestamp = timestamp ?? now;
   const hookId = ctx.get('X-Atlassian-Webhook-Identifier');
-  const instanceId = hookId ?? `${id ?? eventTimestamp}`;
+  const instanceId = hookId || `${eventTimestamp}`;
 
   const event: Event = {
     pluginName: 'jira',
@@ -35,14 +34,13 @@ export const jiraJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, b
     instanceId,
     customerId: clientId.customerId,
     feedId: clientId.feedId,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    senderAccount: properties.user?.accountId as string,
+    senderAccount: properties.user?.accountId,
     createTimestamp: now,
     eventTimestamp,
-    name: name as string,
+    name: name,
     hookId,
     ...(headerWebhookFlow && { headers: { ['X-Atlassian-Webhook-Flow']: headerWebhookFlow } }),
-    properties: properties as Event['properties'],
+    properties: body as Event['properties'],
   };
 
   return event;
@@ -56,6 +54,7 @@ export const jiraEventToActivity: EventToActivity = (event: Event, eventStorageI
 
     const activity: Activity = {
       objectId: eventStorageId,
+      eventType: EventType.jira,
       event: event.name,
       createdTimestamp: event.createTimestamp,
       customerId: event.customerId,

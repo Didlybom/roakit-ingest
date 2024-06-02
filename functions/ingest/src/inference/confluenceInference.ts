@@ -1,14 +1,21 @@
 import { Action, Artifact } from '../types';
 import type { ConfluenceEventSchema } from '../types/confluenceSchema';
 
-export const inferArtifact = (): Artifact => {
-  return 'taskOrg';
+export const inferArtifact = (eventName: string): Artifact => {
+  if (eventName.startsWith('space')) {
+    return 'docOrg';
+  }
+  return 'doc';
 };
 
 export const inferAction = (props: ConfluenceEventSchema): Action => {
   if (props.updateTrigger) {
     return 'updated';
+  } else if (props.labeled) {
+    return 'labeled';
+  } else if (props.comment) {
+    return 'commented';
   } else {
-    return 'created'; // could be a comment
+    return 'created';
   }
 };

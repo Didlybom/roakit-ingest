@@ -118,6 +118,8 @@ const zchangeLog = z.object({
 export type ChangeLogSchema = z.infer<typeof zchangeLog>;
 
 export const jiraEventSchema = z.object({
+  webhookEvent: z.string(),
+  timestamp: z.number(),
   user: zuser.optional(),
   project: zproject.optional(),
   issue: zissue.optional(),

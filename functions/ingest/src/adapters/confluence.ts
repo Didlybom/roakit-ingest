@@ -3,9 +3,9 @@ import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { inferAction, inferArtifact } from '../inference/confluenceInference';
-import type { Activity, Event } from '../types';
-import { confluenceEventSchema } from '../types/confluenceSchema';
-import { toComment, toPage, toSpace } from '../types/confluenceSchemaAdapter';
+import { EventType, type Activity, type Event } from '../types';
+import { confluenceEventSchema, type ConfluenceEventSchema } from '../types/confluenceSchema';
+import { toComment, toLabel, toPage, toSpace } from '../types/confluenceSchemaAdapter';
 
 const logger = pino({ name: 'adapters:confluence' });
 
@@ -15,29 +15,27 @@ export const confluenceJsonToEvent: JsonToEvent = (
   body: unknown
 ) => {
   const now = Date.now();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-  const { userAccountId, timestamp, ...properties } = body as any;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { userAccountId, timestamp, ...properties } = body as ConfluenceEventSchema;
 
   const headerWebhookFlow = ctx.get('X-Atlassian-Webhook-Flow');
 
-  const eventTimestamp = (timestamp as number) ?? now;
+  const eventTimestamp = timestamp ?? now;
   const hookId = ctx.get('X-Atlassian-Webhook-Identifier');
-  const instanceId = hookId ?? `${eventTimestamp}`;
+  const instanceId = hookId || `${eventTimestamp}`;
 
   let name: string;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
   if (properties.updateTrigger) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    name = properties.updateTrigger as string;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    name = properties.updateTrigger;
   } else if (properties.space) {
     name = 'space';
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   } else if (properties.page) {
     name = 'page';
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   } else if (properties.comment) {
     name = 'comment';
+  } else if (properties.labeled) {
+    name = 'labeled';
   } else {
     name = 'unknown';
   }
@@ -47,14 +45,13 @@ export const confluenceJsonToEvent: JsonToEvent = (
     instanceId,
     customerId: clientId.customerId,
     feedId: clientId.feedId,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    senderAccount: userAccountId as string,
+    senderAccount: userAccountId!,
     createTimestamp: now,
     eventTimestamp,
     name,
     hookId,
     ...(headerWebhookFlow && { headers: { ['X-Atlassian-Webhook-Flow']: headerWebhookFlow } }),
-    properties: properties as Event['properties'],
+    properties: body as Event['properties'],
   };
 
   return event;
@@ -69,10 +66,11 @@ export const confluenceEventToActivity: EventToActivity = (
 
     const activity: Activity = {
       objectId: eventStorageId,
+      eventType: EventType.confluence,
       event: event.name,
       createdTimestamp: event.createTimestamp,
       customerId: event.customerId,
-      artifact: inferArtifact(),
+      artifact: inferArtifact(event.name),
       actorAccountId: event.senderAccount,
       action: inferAction(props),
       initiative: '', // FIXME map initiative
@@ -80,6 +78,7 @@ export const confluenceEventToActivity: EventToActivity = (
         ...(props.space && { space: toSpace(props.space) }),
         ...(props.page && { page: toPage(props.page) }),
         ...(props.comment && { comment: toComment(props.comment) }),
+        ...(props.labeled && { label: toLabel(props) }),
       },
     };
 

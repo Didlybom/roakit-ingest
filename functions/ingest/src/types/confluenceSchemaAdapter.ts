@@ -1,5 +1,10 @@
-import type { Comment, Page, Space } from '.';
-import type { CommentSchema, PageSchema, SpaceSchema } from './confluenceSchema';
+import type { Comment, Label, Page, Space } from '.';
+import type {
+  CommentSchema,
+  ConfluenceEventSchema,
+  PageSchema,
+  SpaceSchema,
+} from './confluenceSchema';
 
 export const toSpace = (props: SpaceSchema): Space => {
   return {
@@ -45,5 +50,21 @@ export const toComment = (props: CommentSchema): Comment => {
         title: props.parent.title,
       },
     }),
+  };
+};
+
+export const toLabel = (props: ConfluenceEventSchema): Label | null => {
+  if (!props.labeled) {
+    return null;
+  }
+  return {
+    id: props.labeled.id,
+    name: props.label?.name,
+    author: props.label?.ownerAccountId,
+    uri: props.label?.self,
+    spaceKey: props.labeled.spaceKey,
+    created: props.labeled.creationDate,
+    updated: props.labeled.modificationDate,
+    updateAuthor: props.labeled.lastModifierAccountId,
   };
 };

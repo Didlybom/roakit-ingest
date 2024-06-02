@@ -41,11 +41,34 @@ const zcomment = z.object({
 });
 export type CommentSchema = z.infer<typeof zcomment>;
 
+const zlabeled = z.object({
+  id: z.string(),
+  creatorAccountId: z.string(),
+  lastModifierAccountId: z.string(),
+  spaceKey: z.string(),
+  self: z.string(),
+  creationDate: z.number(),
+  modificationDate: z.number(),
+  labels: z.object({ name: z.string() }).array(),
+});
+export type LabeledSchema = z.infer<typeof zlabeled>;
+
+const zlabel = z.object({
+  name: z.string(),
+  self: z.string(),
+  title: z.string(),
+  ownerAccountId: z.string(),
+});
+export type LabelSchema = z.infer<typeof zlabel>;
+
 export const confluenceEventSchema = z.object({
+  timestamp: z.number(),
   userAccountId: z.string().optional(),
   updateTrigger: z.string().optional(),
   space: zspace.optional(),
   page: zpage.optional(),
   comment: zcomment.optional(),
+  labeled: zlabeled.optional(),
+  label: zlabel.optional(),
 });
 export type ConfluenceEventSchema = z.infer<typeof confluenceEventSchema>;
