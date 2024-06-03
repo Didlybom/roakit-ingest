@@ -113,7 +113,7 @@ export interface Issue {
     name: string;
     uri: string;
     category?: {
-      id: number;
+      id: string;
       key: string;
       name: string;
       uri: string;

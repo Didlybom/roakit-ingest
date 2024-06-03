@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 const zspace = z.object({
-  id: z.number(),
-  creatorAccountId: z.string(),
-  lastModifierAccountId: z.string(),
+  id: z.coerce.string(),
+  creatorAccountId: z.coerce.string(),
+  lastModifierAccountId: z.coerce.string(),
   self: z.string(),
   key: z.string(),
   isPersonalSpace: z.boolean(),
@@ -15,11 +15,11 @@ const zspace = z.object({
 export type SpaceSchema = z.infer<typeof zspace>;
 
 const zpage = z.object({
-  id: z.string(),
-  creatorAccountId: z.string(),
-  lastModifierAccountId: z.string(),
+  id: z.coerce.string(),
+  creatorAccountId: z.coerce.string(),
+  lastModifierAccountId: z.coerce.string(),
   spaceKey: z.string(),
-  spaceId: z.number(),
+  spaceId: z.coerce.string(),
   self: z.string(),
   contentType: z.string(),
   title: z.string(),
@@ -30,9 +30,9 @@ const zpage = z.object({
 export type PageSchema = z.infer<typeof zpage>;
 
 const zcomment = z.object({
-  id: z.string(),
-  creatorAccountId: z.string(),
-  lastModifierAccountId: z.string(),
+  id: z.coerce.string(),
+  creatorAccountId: z.coerce.string(),
+  lastModifierAccountId: z.coerce.string(),
   spaceKey: z.string(),
   self: z.string(),
   creationDate: z.number(),
@@ -42,9 +42,9 @@ const zcomment = z.object({
 export type CommentSchema = z.infer<typeof zcomment>;
 
 const zlabeled = z.object({
-  id: z.string(),
-  creatorAccountId: z.string(),
-  lastModifierAccountId: z.string(),
+  id: z.coerce.string(),
+  creatorAccountId: z.coerce.string(),
+  lastModifierAccountId: z.coerce.string(),
   spaceKey: z.string(),
   self: z.string(),
   creationDate: z.number(),
@@ -57,13 +57,13 @@ const zlabel = z.object({
   name: z.string(),
   self: z.string(),
   title: z.string(),
-  ownerAccountId: z.string(),
+  ownerAccountId: z.coerce.string(),
 });
 export type LabelSchema = z.infer<typeof zlabel>;
 
 export const confluenceEventSchema = z.object({
   timestamp: z.number(),
-  userAccountId: z.string().optional(),
+  userAccountId: z.coerce.string().optional(),
   updateTrigger: z.string().optional(),
   space: zspace.optional(),
   page: zpage.optional(),

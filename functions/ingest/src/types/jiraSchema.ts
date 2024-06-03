@@ -4,21 +4,21 @@ const zdatetime = z.string().datetime({ offset: true });
 
 const zuser = z.object({
   self: z.string().url().optional(),
-  accountId: z.string(),
+  accountId: z.coerce.string(),
   displayName: z.string().optional(),
   emailAddress: z.string().optional(),
   timeZone: z.string().optional(),
 });
 
 const zproject = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   key: z.string(),
   name: z.string(),
   self: z.string().url(),
 });
 
 const zissue = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   key: z.string(),
   self: z.string().url(),
   fields: z.object({
@@ -30,17 +30,17 @@ const zissue = z.object({
     summary: z.string(),
     description: z.string().optional().nullable(),
     priority: z.object({
-      id: z.string(),
+      id: z.coerce.string(),
       name: z.string(),
     }),
     project: zproject,
     status: z.object({
-      id: z.string(),
+      id: z.coerce.string(),
       name: z.string(),
       self: z.string().url(),
       statusCategory: z
         .object({
-          id: z.number(),
+          id: z.coerce.string(),
           key: z.string(),
           name: z.string(),
           self: z.string().url(),
@@ -52,7 +52,7 @@ const zissue = z.object({
 export type IssueSchema = z.infer<typeof zissue>;
 
 const zcomment = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   author: zuser,
   body: z.string(),
   created: zdatetime.optional(),
@@ -63,7 +63,7 @@ const zcomment = z.object({
 export type CommentSchema = z.infer<typeof zcomment>;
 
 const zattachment = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   filename: z.string(),
   mimeType: z.string().optional(),
   created: zdatetime,
@@ -75,10 +75,10 @@ const zattachment = z.object({
 export type AttachmentSchema = z.infer<typeof zattachment>;
 
 const zsprint = z.object({
-  id: z.string().or(z.number()),
+  id: z.coerce.string(),
   name: z.string(),
   state: z.string(),
-  originalBoardId: z.number().optional(),
+  originalBoardId: z.coerce.string().optional(),
   goal: z.string().optional(),
   createdDate: zdatetime,
   startDate: zdatetime.optional(),
@@ -89,24 +89,24 @@ const zsprint = z.object({
 export type SprintSchema = z.infer<typeof zsprint>;
 
 const zworklog = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   created: zdatetime,
   updated: zdatetime,
   started: zdatetime,
   author: zuser,
   updateAuthor: zuser.optional(),
-  issueId: z.string(),
+  issueId: z.coerce.string(),
   timeSpentSeconds: z.number().optional(),
   self: z.string().url(),
 });
 export type WorklogSchema = z.infer<typeof zworklog>;
 
 const zchangeLog = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   items: z
     .object({
       field: z.string().optional(),
-      fieldId: z.string().optional(),
+      fieldId: z.coerce.string().optional(),
       fieldtype: z.string(),
       from: z.string().optional().nullable(),
       fromString: z.string().optional().nullable(),
