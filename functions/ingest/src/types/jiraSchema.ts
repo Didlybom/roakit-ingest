@@ -69,6 +69,7 @@ const zattachment = z.object({
   created: zdatetime,
   author: zuser,
   content: z.string().url(),
+  thumbnail: z.string().url().optional(),
   size: z.number(),
   self: z.string().url(),
 });

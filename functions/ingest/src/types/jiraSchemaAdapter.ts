@@ -72,7 +72,7 @@ export const toAttachment = (props: AttachmentSchema): Attachment => {
     author: props.author.accountId,
     filename: props.filename,
     mimeType: props.mimeType,
-    uri: props.self,
+    uri: props.content,
     created: toTimestamp(props.created),
   };
 };

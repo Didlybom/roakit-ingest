@@ -129,6 +129,7 @@ export interface Comment {
   created?: number;
   updated?: number;
   updateAuthor?: string;
+  inReplyToId?: string;
   parent?: {
     type: string;
     id: string;
@@ -205,8 +206,10 @@ export interface Label {
   id: string;
   author?: string;
   name?: string;
-  uri?: string;
   spaceKey?: string;
+  uri?: string;
+  contentUri?: string;
+  contentType?: string;
   created?: number;
   updated?: number;
   updateAuthor?: string;

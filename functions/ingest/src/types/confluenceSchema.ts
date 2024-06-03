@@ -38,6 +38,7 @@ const zcomment = z.object({
   creationDate: z.number(),
   modificationDate: z.number(),
   parent: zpage.optional(),
+  inReplyTo: z.object({ id: z.coerce.string() }).optional(),
 });
 export type CommentSchema = z.infer<typeof zcomment>;
 
@@ -46,6 +47,7 @@ const zlabeled = z.object({
   creatorAccountId: z.coerce.string(),
   lastModifierAccountId: z.coerce.string(),
   spaceKey: z.string(),
+  contentType: z.string(),
   self: z.string(),
   creationDate: z.number(),
   modificationDate: z.number(),

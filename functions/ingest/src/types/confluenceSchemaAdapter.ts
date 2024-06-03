@@ -43,6 +43,9 @@ export const toComment = (props: CommentSchema): Comment => {
     created: props.creationDate,
     updated: props.modificationDate,
     updateAuthor: props.lastModifierAccountId,
+    ...(props.inReplyTo && {
+      inReplyToId: props.inReplyTo.id,
+    }),
     ...(props.parent && {
       parent: {
         type: props.parent.contentType,
@@ -62,7 +65,9 @@ export const toLabel = (props: ConfluenceEventSchema): Label | null => {
     name: props.label?.name,
     author: props.label?.ownerAccountId,
     uri: props.label?.self,
+    contentUri: props.labeled.self,
     spaceKey: props.labeled.spaceKey,
+    contentType: props.labeled.contentType,
     created: props.labeled.creationDate,
     updated: props.labeled.modificationDate,
     updateAuthor: props.labeled.lastModifierAccountId,

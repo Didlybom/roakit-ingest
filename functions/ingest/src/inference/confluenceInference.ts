@@ -12,9 +12,9 @@ export const inferAction = (props: ConfluenceEventSchema): Action => {
   if (props.updateTrigger) {
     return 'updated';
   } else if (props.labeled) {
-    return 'labeled';
+    return 'updated';
   } else if (props.comment) {
-    return 'commented';
+    return 'updated';
   } else {
     return 'created';
   }
