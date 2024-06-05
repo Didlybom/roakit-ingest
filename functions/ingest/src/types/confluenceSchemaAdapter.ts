@@ -1,4 +1,4 @@
-import type { Comment, Label, Page, Space } from '.';
+import type { Attachments, Comment, Label, Page, Space } from '.';
 import type {
   CommentSchema,
   ConfluenceEventSchema,
@@ -43,16 +43,37 @@ export const toComment = (props: CommentSchema): Comment => {
     created: props.creationDate,
     updated: props.modificationDate,
     updateAuthor: props.lastModifierAccountId,
-    ...(props.inReplyTo && {
-      inReplyToId: props.inReplyTo.id,
-    }),
+    ...(props.inReplyTo && { inReplyToId: props.inReplyTo.id }),
     ...(props.parent && {
       parent: {
         type: props.parent.contentType,
         id: props.parent.id,
         title: props.parent.title,
+        uri: props.parent.self,
       },
     }),
+  };
+};
+
+export const toAttachments = (props: ConfluenceEventSchema): Attachments | null => {
+  if (!props.attachments && !props.attachedTo) {
+    return null;
+  }
+  return {
+    files: props.attachments!.map(attach => ({
+      id: attach.id,
+      author: attach.creatorAccountId,
+      uri: attach.self,
+      filename: attach.fileName,
+      comment: attach.comment,
+      created: attach.creationDate,
+    })),
+    parent: {
+      type: props.attachedTo!.contentType,
+      id: props.attachedTo!.id,
+      title: props.attachedTo!.title,
+      uri: props.attachedTo!.self,
+    },
   };
 };
 

@@ -15,6 +15,8 @@ export const inferAction = (props: ConfluenceEventSchema): Action => {
     return 'updated';
   } else if (props.comment) {
     return 'updated';
+  } else if (props.attachedTo) {
+    return 'updated';
   } else {
     return 'created';
   }

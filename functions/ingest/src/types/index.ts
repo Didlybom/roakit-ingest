@@ -147,6 +147,23 @@ export interface Attachment {
   created?: number;
 }
 
+export interface Attachments {
+  files: {
+    id: string;
+    author: string;
+    filename: string;
+    mimeType?: string;
+    uri?: string;
+    created?: number;
+  }[];
+  parent?: {
+    type: string;
+    id: string;
+    title?: string;
+    uri?: string;
+  };
+}
+
 export interface Sprint {
   id: string | number;
   name: string;

@@ -5,7 +5,13 @@ import { ClientId } from '../generated';
 import { inferAction, inferArtifact } from '../inference/confluenceInference';
 import { EventType, type Activity, type Event } from '../types';
 import { confluenceEventSchema, type ConfluenceEventSchema } from '../types/confluenceSchema';
-import { toComment, toLabel, toPage, toSpace } from '../types/confluenceSchemaAdapter';
+import {
+  toAttachments,
+  toComment,
+  toLabel,
+  toPage,
+  toSpace,
+} from '../types/confluenceSchemaAdapter';
 
 const logger = pino({ name: 'adapters:confluence' });
 
@@ -34,6 +40,8 @@ export const confluenceJsonToEvent: JsonToEvent = (
     name = 'page';
   } else if (properties.comment) {
     name = 'comment';
+  } else if (properties.attachedTo) {
+    name = 'attachment';
   } else if (properties.labeled) {
     name = 'labeled';
   } else {
@@ -78,6 +86,7 @@ export const confluenceEventToActivity: EventToActivity = (
         ...(props.space && { space: toSpace(props.space) }),
         ...(props.page && { page: toPage(props.page) }),
         ...(props.comment && { comment: toComment(props.comment) }),
+        ...(props.attachedTo && { attachments: toAttachments(props) }),
         ...(props.labeled && { label: toLabel(props) }),
       },
     };

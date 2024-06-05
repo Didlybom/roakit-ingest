@@ -42,12 +42,39 @@ const zcomment = z.object({
 });
 export type CommentSchema = z.infer<typeof zcomment>;
 
+const zattachment = z.object({
+  id: z.coerce.string(),
+  creatorAccountId: z.coerce.string(),
+  lastModifierAccountId: z.coerce.string(),
+  self: z.string(),
+  creationDate: z.number(),
+  modificationDate: z.number(),
+  fileName: z.string(),
+  fileSize: z.number().optional(),
+  comment: z.string().optional(),
+  version: z.number().optional(),
+});
+export type AttachmentSchema = z.infer<typeof zattachment>;
+
+const zattachedTo = z.object({
+  id: z.coerce.string(),
+  creatorAccountId: z.coerce.string(),
+  lastModifierAccountId: z.coerce.string(),
+  spaceKey: z.string(),
+  self: z.string(),
+  creationDate: z.number(),
+  modificationDate: z.number(),
+  title: z.string().optional(),
+  contentType: z.string(),
+});
+export type AttachedToSchema = z.infer<typeof zattachedTo>;
+
 const zlabeled = z.object({
   id: z.coerce.string(),
   creatorAccountId: z.coerce.string(),
   lastModifierAccountId: z.coerce.string(),
   spaceKey: z.string(),
-  contentType: z.string(),
+  contentType: z.string().optional(),
   self: z.string(),
   creationDate: z.number(),
   modificationDate: z.number(),
@@ -70,6 +97,8 @@ export const confluenceEventSchema = z.object({
   space: zspace.optional(),
   page: zpage.optional(),
   comment: zcomment.optional(),
+  attachments: zattachment.array().optional(),
+  attachedTo: zattachedTo.optional(),
   labeled: zlabeled.optional(),
   label: zlabel.optional(),
 });
