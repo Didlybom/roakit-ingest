@@ -131,7 +131,7 @@ export interface Comment {
   updateAuthor?: string;
   inReplyToId?: string;
   parent?: {
-    type: string;
+    type?: string;
     id: string;
     title?: string;
     uri?: string;
@@ -157,7 +157,7 @@ export interface Attachments {
     created?: number;
   }[];
   parent?: {
-    type: string;
+    type?: string;
     id: string;
     title?: string;
     uri?: string;
@@ -210,7 +210,7 @@ export interface Space {
 export interface Page {
   id: string;
   author: string;
-  title: string;
+  title?: string;
   spaceKey?: string;
   version?: number;
   uri?: string;

@@ -21,8 +21,8 @@ const zpage = z.object({
   spaceKey: z.string(),
   spaceId: z.coerce.string(),
   self: z.string(),
-  contentType: z.string(),
-  title: z.string(),
+  contentType: z.string().optional(),
+  title: z.string().optional(),
   version: z.number().optional(),
   creationDate: z.number(),
   modificationDate: z.number(),
@@ -65,7 +65,7 @@ const zattachedTo = z.object({
   creationDate: z.number(),
   modificationDate: z.number(),
   title: z.string().optional(),
-  contentType: z.string(),
+  contentType: z.string().optional(),
 });
 export type AttachedToSchema = z.infer<typeof zattachedTo>;
 
