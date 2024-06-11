@@ -118,6 +118,9 @@ const handleIdentities = async (
   identities: IdentityMap,
   account: Account
 ) => {
+  if (!account.id) {
+    return;
+  }
   let foundIdentity = findIdentity(identities, feedId, account.id);
   if (!foundIdentity) {
     const freshIdentities = await getIdentities(customerId, { noCache: true });
