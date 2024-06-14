@@ -16,15 +16,11 @@ module.exports = {
   plugins: ['@typescript-eslint', '@stylistic', 'jest'],
   ignorePatterns: ['/lib/**/*', '/src/generated/proto/**/*'],
   rules: {
-    'no-console': [2],
-    'arrow-parens': [2, 'as-needed'],
+    'no-console': ['error'],
+    'arrow-parens': ['error', 'as-needed'],
     '@typescript-eslint/no-misused-promises': [
-      2,
-      {
-        checksVoidReturn: {
-          attributes: false,
-        },
-      },
+      'error',
+      { checksVoidReturn: { attributes: false } },
     ],
   },
 };

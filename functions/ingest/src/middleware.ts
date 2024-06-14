@@ -132,6 +132,8 @@ const handleIdentities = async (
 };
 
 export const eventMiddleware = (eventType: EventType) => async (ctx: Context, next: Next) => {
+  const NO_WRITE = process.env.NO_WRITE; // debugging utility
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   const body = (ctx.req as any).body as unknown;
   if (!body) {
@@ -152,14 +154,15 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
     if (!banned) {
       banned = handleBannedAccounts(bannedAccounts, event).banned;
     }
-    const { eventStorageId } = await gcsSaveEvent({ ...event, banned });
+    const { eventStorageId } =
+      NO_WRITE ? { eventStorageId: '_no_write_' } : await gcsSaveEvent({ ...event, banned });
 
     if (!banned) {
       const { activity, account, ticket } = eventToActivity[eventType](event, eventStorageId);
-      if (account) {
+      if (account && !NO_WRITE) {
         await handleIdentities(event.customerId, event.feedId, identities, account);
       }
-      if (activity) {
+      if (activity && !NO_WRITE) {
         await Promise.all([
           saveActivity(activity),
           ...(account ? [saveAccount(account, event.customerId, event.feedId)] : []),
