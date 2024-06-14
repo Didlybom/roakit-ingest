@@ -36,8 +36,10 @@ export const confluenceJsonToEvent: JsonToEvent = (
     name = properties.updateTrigger;
   } else if (properties.space) {
     name = 'space';
-  } else if (properties.page) {
+  } else if (properties.page ?? properties.content?.contentType === 'page') {
     name = 'page';
+  } else if (properties.content) {
+    name = 'content';
   } else if (properties.comment) {
     name = 'comment';
   } else if (properties.attachedTo) {
@@ -85,6 +87,7 @@ export const confluenceEventToActivity: EventToActivity = (
       metadata: {
         ...(props.space && { space: toSpace(props.space) }),
         ...(props.page && { page: toPage(props.page) }),
+        ...(props.content?.contentType === 'page' && { page: toPage(props.content) }),
         ...(props.comment && { comment: toComment(props.comment) }),
         ...(props.attachedTo && { attachments: toAttachments(props) }),
         ...(props.labeled && { label: toLabel(props) }),

@@ -96,6 +96,7 @@ export const confluenceEventSchema = z.object({
   updateTrigger: z.string().optional(),
   space: zspace.optional(),
   page: zpage.optional(),
+  content: zpage.optional(),
   comment: zcomment.optional(),
   attachments: zattachment.array().optional(),
   attachedTo: zattachedTo.optional(),
