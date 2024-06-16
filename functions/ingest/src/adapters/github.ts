@@ -57,6 +57,7 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
       eventType: EventType.github,
       event: event.name,
       createdTimestamp: event.createTimestamp,
+      eventTimestamp: event.eventTimestamp,
       customerId: event.customerId,
       artifact: inferArtifact(event.name),
       actorAccountId: account?.id,

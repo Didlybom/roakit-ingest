@@ -79,6 +79,7 @@ export const confluenceEventToActivity: EventToActivity = (
       eventType: EventType.confluence,
       event: event.name,
       createdTimestamp: event.createTimestamp,
+      eventTimestamp: event.eventTimestamp,
       customerId: event.customerId,
       artifact: inferArtifact(event.name),
       actorAccountId: event.senderAccount,

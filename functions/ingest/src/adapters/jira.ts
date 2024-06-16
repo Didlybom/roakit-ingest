@@ -57,6 +57,7 @@ export const jiraEventToActivity: EventToActivity = (event: Event, eventStorageI
       eventType: EventType.jira,
       event: event.name,
       createdTimestamp: event.createTimestamp,
+      eventTimestamp: event.eventTimestamp,
       customerId: event.customerId,
       artifact: inferArtifact(event.name),
       actorAccountId: account?.id,

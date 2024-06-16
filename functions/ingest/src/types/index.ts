@@ -273,6 +273,7 @@ export interface Activity {
   eventType: EventType;
   event: string;
   createdTimestamp: number;
+  eventTimestamp: number;
   customerId: number;
   artifact: Artifact;
   action: Action;
