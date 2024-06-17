@@ -17,6 +17,8 @@ export const inferAction = (props: ConfluenceEventSchema): Action => {
     return 'updated';
   } else if (props.attachedTo) {
     return 'updated';
+  } else if ((props.page?.version ?? 0) > 1) {
+    return 'updated';
   } else {
     return 'created';
   }
