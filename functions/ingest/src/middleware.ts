@@ -165,7 +165,7 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
       if (activity && !NO_WRITE) {
         await Promise.all([
           saveActivity(activity),
-          ...(account ? [saveAccount(account, event.customerId, event.feedId)] : []),
+          ...(account?.id ? [saveAccount(account, event.customerId, event.feedId)] : []),
           ...(ticket ? [saveTicket(ticket, event.customerId)] : []),
         ]);
       }
