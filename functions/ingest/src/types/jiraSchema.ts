@@ -98,7 +98,7 @@ const zworklog = z.object({
   updateAuthor: zuser.optional(),
   issueId: z.coerce.string(),
   timeSpentSeconds: z.number().optional(),
-  self: z.string().url(),
+  self: z.string().url().optional(),
 });
 export type WorklogSchema = z.infer<typeof zworklog>;
 
