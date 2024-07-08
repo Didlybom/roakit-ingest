@@ -96,6 +96,11 @@ const handleBannedEvents = async (
     banned = true;
   }
 
+  // "ban" confluence events without user
+  if (eventType === 'confluence' && !event.properties?.userAccountId) {
+    banned = true;
+  }
+
   return { banned };
 };
 
