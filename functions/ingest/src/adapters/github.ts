@@ -11,6 +11,7 @@ import {
   toCommits,
   toPullRequest,
   toPullRequestComment,
+  toPullRequestIssue,
   toRelease,
   toRepository,
 } from '../types/githubSchemaAdapter';
@@ -68,9 +69,8 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
         ...(props.action && { codeAction: toCodeAction(props) }),
         ...(props.repository && { repository: toRepository(props.repository) }),
         ...(props.pull_request && { pullRequest: toPullRequest(props.pull_request) }),
-        ...(props.comment && {
-          pullRequestComment: toPullRequestComment(props.comment),
-        }),
+        ...(props.comment && { pullRequestComment: toPullRequestComment(props.comment) }),
+        ...(props.issue && { pullRequestIssue: toPullRequestIssue(props.issue) }),
         ...(props.commits && { commits: toCommits(props.commits) }),
         ...(props.release && { release: toRelease(props.release) }),
       },

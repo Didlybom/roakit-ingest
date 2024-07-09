@@ -24,6 +24,9 @@ export type PullRequestSchema = z.infer<typeof zpullrequest>;
 const zcomment = z.object({ body: z.string(), html_url: z.string(), user: zuser });
 export type CommentSchema = z.infer<typeof zcomment>;
 
+const zissue = z.object({ title: z.string(), html_url: z.string() });
+export type IssueSchema = z.infer<typeof zissue>;
+
 const zcommits = z
   .object({ message: z.string(), url: z.string().url(), timestamp: zdatetime })
   .array();
@@ -41,8 +44,11 @@ export const githubEventSchema = z.object({
   // action: pull_request
   pull_request: zpullrequest.optional(),
 
-  // action: pull_request_review_comment
+  // action: pull_request_review_comment, issue_comment
   comment: zcomment.optional(),
+
+  // action: issue_comment
+  issue: zissue.optional(),
 
   // action: push
   commits: zcommits.optional(),

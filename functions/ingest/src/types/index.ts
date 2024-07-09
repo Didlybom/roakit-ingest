@@ -257,6 +257,11 @@ export interface PullRequestComment {
   uri?: string;
 }
 
+export interface PullRequestIssue {
+  title: string;
+  uri?: string;
+}
+
 export interface Commit {
   message: string;
   uri?: string;
@@ -300,6 +305,7 @@ export interface Activity {
     repository?: string;
     pullRequest?: PullRequest;
     pullRequestComment?: PullRequestComment;
+    pullRequestIssue?: PullRequestIssue;
     commits?: Commit[];
     release?: Release;
   };

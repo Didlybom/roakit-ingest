@@ -1,4 +1,4 @@
-import { Commit, PullRequest, PullRequestComment, Release } from '.';
+import { Commit, PullRequest, PullRequestComment, Release, type PullRequestIssue } from '.';
 import { toTimestamp } from '../utils/dateUtils';
 import {
   CommentSchema,
@@ -7,6 +7,7 @@ import {
   PullRequestSchema,
   ReleaseSchema,
   RepositorySchema,
+  type IssueSchema,
 } from './githubSchema';
 
 export const toCodeAction = (props: GitHubEventSchema) => props.action;
@@ -31,6 +32,13 @@ export const toPullRequestComment = (props: CommentSchema): PullRequestComment =
   return {
     body: props.body,
     author: props.user.login,
+    uri: props.html_url,
+  };
+};
+
+export const toPullRequestIssue = (props: IssueSchema): PullRequestIssue => {
+  return {
+    title: props.title,
     uri: props.html_url,
   };
 };
