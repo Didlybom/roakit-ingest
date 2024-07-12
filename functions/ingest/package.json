@@ -8,7 +8,7 @@
     "build": "npm run build:proto && tsc",
     "build:proto": "mkdir -p src/generated && protoc --ts_opt=esModuleInterop=true --ts_opt=json_names --ts_out=src/generated proto/*.proto",
     "watch": "tsc --watch",
-    "local": "npm run build && firebase use eternal-impulse-412418 && firebase emulators:start --inspect-functions --only functions:ingest",
+    "local": "cross-env LOG_LEVEL=debug npm run build && firebase use eternal-impulse-412418 && firebase emulators:start --inspect-functions --only functions:ingest",
     "local:no-write": "cross-env NO_WRITE=true npm run local",
     "deploy": "npm run build && firebase use eternal-impulse-412418 && firebase deploy --only functions:ingest",
     "deploy:prod": "npm run build && firebase use prod && firebase deploy --only functions:ingest && npm run smoke",
@@ -49,7 +49,7 @@
     "jest": "^29.7.0",
     "prettier": "^3.3.2",
     "protoc-gen-ts": "^0.8.7",
-    "ts-jest": "^29.2.0",
+    "ts-jest": "^29.2.2",
     "typescript": "^5.5.3"
   },
   "engines": {

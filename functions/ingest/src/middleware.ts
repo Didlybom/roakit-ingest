@@ -1,5 +1,4 @@
 import { Context, Next } from 'koa';
-import pino from 'pino';
 import { eventToActivity, jsonToEvent } from './adapters';
 import { gcsEventInstances, gcsSaveEvent } from './cloudstore';
 import {
@@ -23,8 +22,9 @@ import {
 } from './types';
 import { decodeClientId, verifyHmacSignature } from './utils/cryptoUtils';
 import { getHourBuckets } from './utils/dateUtils';
+import { getLogger } from './utils/loggerUtils';
 
-const logger = pino({ name: 'middleware' });
+const logger = getLogger('middleware');
 
 export const deserializeClientId = (ctx: Context) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
@@ -173,6 +173,9 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
           ...(account?.id ? [saveAccount(account, event.customerId, event.feedId)] : []),
           ...(ticket ? [saveTicket(ticket, event.customerId)] : []),
         ]);
+      }
+      if (activity && NO_WRITE) {
+        logger.debug(activity, '[NO_WRITE] Created activity');
       }
       ctx.status = 202 /* Accepted */;
     } else {

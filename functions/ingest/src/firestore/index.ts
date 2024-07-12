@@ -2,12 +2,12 @@ import retry from 'async-retry';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, type DocumentReference } from 'firebase-admin/firestore';
 import NodeCache from 'node-cache';
-import pino from 'pino';
 import type { Account, Activity, IdentityMap, Ticket } from '../types';
 import { identitySchema } from '../types/roakitSchema';
 import { ONE_DAY } from '../utils/dateUtils';
+import { getLogger } from '../utils/loggerUtils';
 
-const logger = pino({ name: 'firestore' });
+const logger = getLogger('firestore');
 
 if (getApps().length === 0) {
   initializeApp();

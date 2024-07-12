@@ -1,5 +1,4 @@
 import { Context } from 'koa';
-import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { inferAction, inferArtifact } from '../inference/confluenceInference';
@@ -12,8 +11,9 @@ import {
   toPage,
   toSpace,
 } from '../types/confluenceSchemaAdapter';
+import { getLogger } from '../utils/loggerUtils';
 
-const logger = pino({ name: 'adapters:confluence' });
+const logger = getLogger('adapters:confluence');
 
 export const confluenceJsonToEvent: JsonToEvent = (
   ctx: Context,
@@ -92,6 +92,8 @@ export const confluenceEventToActivity: EventToActivity = (
         ...(props.comment && { comment: toComment(props.comment) }),
         ...(props.attachedTo && { attachments: toAttachments(props) }),
         ...(props.labeled && { label: toLabel(props) }),
+        ...(props.newParent && { newParent: toPage(props.newParent) }),
+        ...(props.oldParent && { oldParent: toPage(props.oldParent) }),
       },
     };
 

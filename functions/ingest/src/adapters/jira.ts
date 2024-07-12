@@ -1,5 +1,4 @@
 import { Context } from 'koa';
-import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { inferAccount, inferAction, inferArtifact } from '../inference/jiraInference';
@@ -15,8 +14,9 @@ import {
   toSprint,
   toTicket,
 } from '../types/jiraSchemaAdapter';
+import { getLogger } from '../utils/loggerUtils';
 
-const logger = pino({ name: 'adapters:jira' });
+const logger = getLogger('adapters:jira');
 
 export const jiraJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, body: unknown) => {
   const now = Date.now();

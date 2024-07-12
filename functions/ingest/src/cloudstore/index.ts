@@ -1,11 +1,11 @@
 import retry from 'async-retry';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
-import pino from 'pino';
 import type { Event } from '../types';
 import { hourBucket } from '../utils/dateUtils';
+import { getLogger } from '../utils/loggerUtils';
 
-const logger = pino({ name: 'cloudstore' });
+const logger = getLogger('cloudstore');
 
 if (getApps().length === 0) {
   initializeApp();

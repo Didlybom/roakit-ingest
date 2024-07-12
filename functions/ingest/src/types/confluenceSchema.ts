@@ -102,5 +102,7 @@ export const confluenceEventSchema = z.object({
   attachedTo: zattachedTo.optional(),
   labeled: zlabeled.optional(),
   label: zlabel.optional(),
+  oldParent: zpage.optional(),
+  newParent: zpage.optional(),
 });
 export type ConfluenceEventSchema = z.infer<typeof confluenceEventSchema>;

@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 import { Context } from 'koa';
-import pino from 'pino';
 import { ClientId } from '../generated';
+import { getLogger } from './loggerUtils';
 
-const logger = pino({ name: 'cryptoUtils' });
+const logger = getLogger('cryptoUtils');
 
 const ALGORITHM = 'sha256';
 const CHECKSUM_LENGTH = 12;

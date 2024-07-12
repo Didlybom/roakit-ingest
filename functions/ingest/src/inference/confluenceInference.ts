@@ -19,6 +19,8 @@ export const inferAction = (props: ConfluenceEventSchema): Action => {
     return 'updated';
   } else if ((props.page?.version ?? 0) > 1) {
     return 'updated';
+  } else if (props.newParent && props.oldParent) {
+    return 'updated';
   } else {
     return 'created';
   }

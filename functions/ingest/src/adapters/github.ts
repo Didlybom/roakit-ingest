@@ -1,5 +1,4 @@
 import { Context } from 'koa';
-import pino from 'pino';
 import type { EventToActivity, JsonToEvent } from '.';
 import { ClientId } from '../generated';
 import { inferAccount, inferAction, inferArtifact } from '../inference/githubInference';
@@ -15,8 +14,9 @@ import {
   toRelease,
   toRepository,
 } from '../types/githubSchemaAdapter';
+import { getLogger } from '../utils/loggerUtils';
 
-const logger = pino({ name: 'adapters:github' });
+const logger = getLogger('adapters:github');
 
 export const gitHubJsonToEvent: JsonToEvent = (ctx: Context, clientId: ClientId, body: unknown) => {
   const now = Date.now();
