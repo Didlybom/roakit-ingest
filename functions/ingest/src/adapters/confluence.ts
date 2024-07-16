@@ -32,7 +32,7 @@ export const confluenceJsonToEvent: JsonToEvent = (
 
   let name: string;
 
-  if (properties.updateTrigger) {
+  if (properties.updateTrigger && properties.updateTrigger !== 'unknown') {
     name = properties.updateTrigger;
   } else if (properties.space) {
     name = 'space';
