@@ -35,6 +35,13 @@ export type CommitsSchema = z.infer<typeof zcommits>;
 const zrelease = z.object({ body: z.string() });
 export type ReleaseSchema = z.infer<typeof zrelease>;
 
+const zlabel = z.object({
+  id: z.coerce.string(),
+  name: z.string(),
+  url: z.string().url().optional(),
+});
+export type LabelSchema = z.infer<typeof zlabel>;
+
 export const githubEventSchema = z.object({
   hook: z.object({ created_at: z.string().optional() }).optional(),
   sender: zuser.optional(),
@@ -55,5 +62,8 @@ export const githubEventSchema = z.object({
 
   // action: release
   release: zrelease.optional(),
+
+  // action pull_request labeled
+  label: zlabel.optional(),
 });
 export type GitHubEventSchema = z.infer<typeof githubEventSchema>;

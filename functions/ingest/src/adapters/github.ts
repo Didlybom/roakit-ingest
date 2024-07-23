@@ -8,6 +8,7 @@ import { githubEventSchema, type GitHubEventSchema } from '../types/githubSchema
 import {
   toCodeAction,
   toCommits,
+  toLabel,
   toPullRequest,
   toPullRequestComment,
   toPullRequestIssue,
@@ -73,6 +74,7 @@ export const githubEventToActivity: EventToActivity = (event: Event, eventStorag
         ...(props.issue && { pullRequestIssue: toPullRequestIssue(props.issue) }),
         ...(props.commits && { commits: toCommits(props.commits) }),
         ...(props.release && { release: toRelease(props.release) }),
+        ...(props.label && { label: toLabel(props.label) }),
       },
     };
 

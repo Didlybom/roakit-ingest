@@ -6,58 +6,52 @@ import type {
   SpaceSchema,
 } from './confluenceSchema';
 
-export const toSpace = (props: SpaceSchema): Space => {
-  return {
-    id: `${props.id}`,
-    author: props.creatorAccountId,
-    key: props.key,
-    title: props.title,
-    isPersonalSpace: props.isPersonalSpace,
-    uri: props.self,
-    created: props.creationDate,
-    updated: props.modificationDate,
-    updateAuthor: props.lastModifierAccountId,
-  };
-};
+export const toSpace = (props: SpaceSchema): Space => ({
+  id: `${props.id}`,
+  author: props.creatorAccountId,
+  key: props.key,
+  title: props.title,
+  isPersonalSpace: props.isPersonalSpace,
+  uri: props.self,
+  created: props.creationDate,
+  updated: props.modificationDate,
+  updateAuthor: props.lastModifierAccountId,
+});
 
-export const toPage = (props: PageSchema): Page => {
-  return {
-    id: props.id,
-    author: props.creatorAccountId,
-    title: props.title,
-    version: props.version,
-    uri: props.self,
-    spaceKey: props.spaceKey,
-    created: props.creationDate,
-    updated: props.modificationDate,
-    updateAuthor: props.lastModifierAccountId,
-  };
-};
+export const toPage = (props: PageSchema): Page => ({
+  id: props.id,
+  author: props.creatorAccountId,
+  title: props.title,
+  version: props.version,
+  uri: props.self,
+  spaceKey: props.spaceKey,
+  created: props.creationDate,
+  updated: props.modificationDate,
+  updateAuthor: props.lastModifierAccountId,
+});
 
-export const toComment = (props: CommentSchema): Comment => {
-  return {
-    id: props.id,
-    body: undefined,
-    author: props.creatorAccountId,
-    uri: props.self,
-    created: props.creationDate,
-    updated: props.modificationDate,
-    updateAuthor: props.lastModifierAccountId,
-    ...(props.inReplyTo && { inReplyToId: props.inReplyTo.id }),
-    ...(props.parent && {
-      parent: {
-        type: props.parent.contentType,
-        id: props.parent.id,
-        title: props.parent.title,
-        uri: props.parent.self,
-      },
-    }),
-  };
-};
+export const toComment = (props: CommentSchema): Comment => ({
+  id: props.id,
+  body: undefined,
+  author: props.creatorAccountId,
+  uri: props.self,
+  created: props.creationDate,
+  updated: props.modificationDate,
+  updateAuthor: props.lastModifierAccountId,
+  ...(props.inReplyTo && { inReplyToId: props.inReplyTo.id }),
+  ...(props.parent && {
+    parent: {
+      type: props.parent.contentType,
+      id: props.parent.id,
+      title: props.parent.title,
+      uri: props.parent.self,
+    },
+  }),
+});
 
-export const toAttachments = (props: ConfluenceEventSchema): Attachments | null => {
+export const toAttachments = (props: ConfluenceEventSchema): Attachments | undefined => {
   if (!props.attachments && !props.attachedTo) {
-    return null;
+    return undefined;
   }
   return {
     files: props.attachments!.map(attach => ({
@@ -77,9 +71,9 @@ export const toAttachments = (props: ConfluenceEventSchema): Attachments | null 
   };
 };
 
-export const toLabel = (props: ConfluenceEventSchema): Label | null => {
+export const toLabel = (props: ConfluenceEventSchema): Label | undefined => {
   if (!props.labeled) {
-    return null;
+    return undefined;
   }
   return {
     id: props.labeled.id,

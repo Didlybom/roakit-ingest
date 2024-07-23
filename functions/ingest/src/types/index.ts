@@ -300,7 +300,7 @@ export interface Activity {
     // project documentation (Confluence)
     page?: Page;
 
-    // code software (Github)
+    // code software (GitHub)
     codeAction?: string;
     repository?: string;
     pullRequest?: PullRequest;
@@ -308,5 +308,6 @@ export interface Activity {
     pullRequestIssue?: PullRequestIssue;
     commits?: Commit[];
     release?: Release;
+    label?: Label;
   };
 }
