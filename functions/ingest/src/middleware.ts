@@ -124,16 +124,17 @@ const handleIdentities = async (
   account: Account
 ) => {
   if (!account.id) {
-    return;
+    return undefined;
   }
   let foundIdentity = findIdentity(identities, feedId, account.id);
   if (!foundIdentity) {
     const freshIdentities = await getIdentities(customerId, { noCache: true });
     foundIdentity = findIdentity(freshIdentities, feedId, account.id);
   }
-  if (!foundIdentity) {
+  if (!foundIdentity && !process.env.NO_WRITE) {
     await insertAccountToReview(customerId, feedId, account);
   }
+  return foundIdentity;
 };
 
 export const eventMiddleware = (eventType: EventType) => async (ctx: Context, next: Next) => {
@@ -164,12 +165,13 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
 
     if (!banned) {
       const { activity, account, ticket } = eventToActivity[eventType](event, eventStorageId);
-      if (account && !NO_WRITE) {
-        await handleIdentities(event.customerId, event.feedId, identities, account);
+      let identity;
+      if (account) {
+        identity = await handleIdentities(event.customerId, event.feedId, identities, account);
       }
       if (activity && !NO_WRITE) {
         await Promise.all([
-          saveActivity(activity),
+          saveActivity({ ...activity, ...(identity && { identityId: identity[0] }) }),
           ...(account?.id ? [saveAccount(account, event.customerId, event.feedId)] : []),
           ...(ticket ? [saveTicket(ticket, event.customerId)] : []),
         ]);

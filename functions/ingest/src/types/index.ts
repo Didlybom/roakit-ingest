@@ -57,12 +57,6 @@ export interface Identity {
 }
 export type IdentityMap = Map<string, Omit<Identity, 'id'>>;
 
-/**
- * FIXME if we want to handle identities automatically, we need to be able for example to find that
- * an existing Jira account (no username, only full name) belongs to the same identity as an incoming GitHub account (no full name).
- *
- * Unused.
- */
 export const findIdentity = (
   identities: IdentityMap,
   feedId: number,
@@ -283,6 +277,7 @@ export interface Activity {
   artifact: Artifact;
   action: Action;
   actorAccountId?: string;
+  identityId?: string;
   priority?: number;
   initiative: string; // not undefined, so Firestore can index the field (as '')
   effort?: number;
