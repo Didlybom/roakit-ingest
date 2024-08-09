@@ -171,7 +171,13 @@ export const eventMiddleware = (eventType: EventType) => async (ctx: Context, ne
       }
       if (activity && !NO_WRITE) {
         await Promise.all([
-          saveActivity({ ...activity, ...(identity && { identityId: identity[0] }) }),
+          saveActivity({
+            ...activity,
+            ...(identity && {
+              identityId: identity[0],
+              ...(identity[1].groups && { groups: identity[1].groups }),
+            }),
+          }),
           ...(account?.id ? [saveAccount(account, event.customerId, event.feedId)] : []),
           ...(ticket ? [saveTicket(ticket, event.customerId)] : []),
         ]);

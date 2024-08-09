@@ -26,15 +26,18 @@ const retryProps = (message: string) => {
   };
 };
 
-const makeCacheKey = (customerId: number, feedId: number) => `${customerId};${feedId}`;
-
+const makeBannedEventsCacheKey = (customerId: number, feedId: number) =>
+  `${customerId};${feedId};bannedEvents`;
 const bannedEventsCache = new NodeCache({ stdTTL: 30 /* seconds */, useClones: false });
 const deleteBannedEventsCacheKey = (customerId: number, feedId: number) => {
-  bannedEventsCache.del(makeCacheKey(customerId, feedId));
+  bannedEventsCache.del(makeBannedEventsCacheKey(customerId, feedId));
 };
 
+const makeBannedAccountsCacheKey = (customerId: number, feedId: number) =>
+  `${customerId};${feedId};bannedAccounts`;
 const bannedAccountsCache = new NodeCache({ stdTTL: 30 /* seconds */, useClones: false });
 
+const makeIdentityCacheKey = (customerId: number) => `${customerId};identities`;
 const identitiesCache = new NodeCache({ stdTTL: 30 /* seconds */, useClones: false });
 
 export const getBannedEvents = async (
@@ -42,7 +45,7 @@ export const getBannedEvents = async (
   feedId: number,
   options: { noCache: boolean } = { noCache: false }
 ): Promise<Record<string, boolean>> => {
-  const cacheKey = makeCacheKey(customerId, feedId);
+  const cacheKey = makeBannedEventsCacheKey(customerId, feedId);
   if (!options?.noCache) {
     const cached: Record<string, boolean> | undefined = bannedEventsCache.get(cacheKey);
     if (cached) {
@@ -80,7 +83,7 @@ export const getBannedAccounts = async (
   customerId: number,
   feedId: number
 ): Promise<Record<string, boolean>> => {
-  const cacheKey = makeCacheKey(customerId, feedId);
+  const cacheKey = makeBannedAccountsCacheKey(customerId, feedId);
   const cached: Record<string, boolean> | undefined = bannedAccountsCache.get(cacheKey);
   if (cached) {
     return cached;
@@ -100,7 +103,7 @@ export const getIdentities = async (
   customerId: number,
   options: { noCache: boolean } = { noCache: false }
 ): Promise<IdentityMap> => {
-  const cacheKey = customerId;
+  const cacheKey = makeIdentityCacheKey(customerId);
   if (!options?.noCache) {
     const cached: IdentityMap | undefined = identitiesCache.get(cacheKey);
     if (cached) {

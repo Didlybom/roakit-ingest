@@ -53,6 +53,7 @@ export interface Identity {
   email?: string;
   displayName?: string;
   timeZone?: string;
+  groups?: string[];
   accounts?: { feedId: number; type: string; id?: Account['id']; name?: string; url?: string }[];
 }
 export type IdentityMap = Map<string, Omit<Identity, 'id'>>;
@@ -278,6 +279,7 @@ export interface Activity {
   action: Action;
   actorAccountId?: string;
   identityId?: string;
+  groups?: string[];
   priority?: number;
   initiative: string; // not undefined, so Firestore can index the field (as '')
   effort?: number;

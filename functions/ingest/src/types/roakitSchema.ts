@@ -4,6 +4,7 @@ export const identitySchema = z.object({
   email: z.string().optional(),
   displayName: z.string().optional(),
   timeZone: z.string().optional(),
+  groups: z.string().array().optional(),
   accounts: z
     .object({
       feedId: z.number(),
