@@ -6,6 +6,11 @@ into Firestore and GCS.
 See also the companion project, `@roakit/remix`, a fullstack web app, consuming the data ingested by
 this project in its backend for frontend and serving it to web pages.
 
+### Architecture
+
+[High-level system architecture ](https://docs.google.com/drawings/d/1RmzvH6djX6aSpKaVxJvNUvPZgK6_3px8HvpOOxWrcIc)
+designed for rapid product exploration and iteration.
+
 ## Developer Notes
 
 ### Local Deployment
